@@ -1,0 +1,38 @@
+. /etc/board/rcS
+
+if [ -r $APP_PROFILE_PATH ]; then
+	. $APP_PROFILE_PATH
+fi
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+alias boardinfo='cat $BOARD_INFO_FILE'
+alias ls='ls --color=auto'
+alias la='ls -a --color=auto'
+alias ll='ls -alF --color=auto'
+alias lh='ls -alhF --color=auto'
+alias l='ls -F --color=auto'
+alias vim='vi'
+#alias lspci='lspci -i /usr/share/hwdata/pci.ids'
+
+proc_cmdline_value $RECOVERY_KEY 
+if [ $? -eq 0 ]; then
+	value=$PROC_LINE_VALUE
+	if [ $value -eq 1 ]; then
+		ROOTFS_MOUNT_NAME=$ROOTFS_MOUNT_NAME_RECOVERY
+	else
+		ROOTFS_MOUNT_NAME=$ROOTFS_MOUNT_NAME_NORMAL
+	fi
+else
+		ROOTFS_MOUNT_NAME=$ROOTFS_MOUNT_NAME_NORMAL
+fi
+
+#内核中rootfs分区名称
+export ROOTFS_PARTION_NAME=$ROOTFS_PARTION_NAME_KERNEL
+#rootfs分区实际挂载名称 这个依据根文件系统类型不同 挂载名称可能不同
+export ROOTFS_MOUNT_NAME
+
+
+

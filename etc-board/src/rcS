@@ -1,0 +1,148 @@
+#
+#	rcS
+#
+
+#rcS.define 需要根据根文件的实际情况进行配置
+. /etc/board/rcS.define
+
+#下面的配置为通用配置部分   注意要求应用程序的文件夹架构必须一致！
+
+#默认PATH文件定义
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/etc/init.d:/etc/board
+
+#app分区
+export APP_MOUNT_POINT=/opt
+export APP_PARTION_NAME=app
+export FLASH_DIR=/var/flash
+
+#gpio class路径
+GPIO_CLASS_PATH=/sys/class/gpio
+#/proc路径
+PROC_APP_FILE_PATH=/proc/$COMPANY
+#应用程序路径
+APP_ENTRY_PATH=/opt/$COMPANY
+
+#系统命令行文件
+SYS_CMDLINE_FILE=/proc/cmdline
+#用于标识 当前是否处于恢复所用的文件系统中 若是 则会影响主机名
+RECOVERY_KEY=recoverymode
+
+#app 入口脚本目录
+APP_ENTRY_SHELL_PATH=$APP_ENTRY_PATH/sbin
+#app 入口脚本文件
+APP_ENTRY_SHELL=itl-sys-proc
+#app profile 文件路径
+APP_PROFILE_PATH=$APP_ENTRY_PATH/etc/profile
+
+#board 下脚本目录
+BOARD_ENTRY_SHELL_PATH=/etc/board
+#proc内核模块名称
+PROC_MODULE=proc_module
+
+#vendor entry shell
+ETC_ENTRY_SHELL_VENDOR_PROC_SYS=vendor-sys-proc
+#挂载app分区脚本
+MOUNT_APP_PARTION_SHELL=mount-app-partion.sh
+
+#通讯用文件
+SHELL_COMM_FILE=/etc/board/sys-regs
+
+
+#boardinfo file
+BOARD_INFO_SRC_FILE="/etc/board/boardinfo.define"
+export BOARD_INFO_FILE="/var/run/boardinfo"
+PROJECT_KEY="project"
+BOARD_TYPE_KEY="board_type"
+CPU_ID_KEY="cpu_id"
+BOARD_ID_KEY="board_id"
+BOARD_ID_FORCE_VALUE_KEY="board_id_force_value"
+PROC_KEY="proc"
+PROC_NONE_VALUE="proc_none"
+CPU_NAME_KEY="cpu_name"
+
+#board_id为空时对应的boardinfo table中文本
+BOARD_ID_NONE_TEXT=none
+
+#network interfaces file
+INTERFACES_SRC_FILE=$BOARD_INFO_FILE
+INTERFACES_DEST_FILE="/etc/network/interfaces"
+
+#hostname file
+HOSTNAME_SRC_FILE=$BOARD_INFO_FILE
+HOSTNAME_DEST_FILE="/etc/hostname"
+
+#some key prefix define
+NETWORK_KEY="network"
+HOSTNAME_KEY="host_name"
+CPU_ID_FORCE_VALUE_KEY="cpu_id_force_value"
+BUILD_TIME_KEY="build_time"
+
+MAC_OUI_KEY="mac_oui"
+MAC_BATCH_SEQ_KEY="mac_batch_seq"
+MAC_VALUE_KEY="XX"
+
+#cpu name define
+CPU_NAME=""
+CPU_ID=""
+
+#proc line value define
+PROC_LINE=""
+PROC_LINE_VALUE=""
+
+proc_line() 
+{
+	if [ $# -lt 2 ]; then
+		echo "************$0 param cnt must >= 2************"
+		exit 2
+	fi
+
+	#此处非严格的匹配
+	PROC_LINE=`grep "^ *$1=" $2`
+	if [ -z "$PROC_LINE" ]; then
+		echo "*******************************$key do not exist!please check $2 setting!*******************************"
+		exit 1
+	fi
+#PROC_LINE_VALUE=${PROC_LINE#$key=}
+	PROC_LINE_VALUE=`echo $PROC_LINE|awk 'BEGIN{FS="="}{print $2}'`
+	if [ $# -eq 3 ]; then
+		echo $PROC_LINE_VALUE >> $3
+	fi
+}
+
+proc_cmdline() 
+{
+	if [ $# -lt 1 ]; then
+		echo "************$0 param cnt must >= 1************"
+		return 2
+	fi
+
+	PROC_LINE=`cat $SYS_CMDLINE_FILE |tr " " "\n"|grep $1`
+	if [ -z "$PROC_LINE" ]; then
+		echo "*******$1 do not exsit in $SYS_CMDLINE_FILE! plese check uboot!*******"
+		return 1
+	fi
+
+	return 0
+}
+
+proc_cmdline_value() 
+{
+	proc_cmdline $1
+	if [ $? -ne 0 ]; then
+		return 1
+	fi
+
+	PROC_LINE_VALUE=`echo $PROC_LINE|awk 'BEGIN{FS="="}{print $2}'`
+	if [ -z "$PROC_LINE_VALUE" ]; then
+		echo "*******$1 do not have value in $SYS_CMDLINE_FILE! plese check uboot!*******"
+		return 3
+	fi
+
+	return 0
+}
+
+debug(){
+		[ $DEBUG = 1  ] && $@
+
+}
+
