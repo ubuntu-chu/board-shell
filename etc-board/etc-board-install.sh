@@ -1,6 +1,6 @@
 #!/bin/sh
 
-ETC_BOARD_SRC_PATH=/home/chum/work/lte/etc-board/src
+ETC_BOARD_SRC_PATH=/home/chum/work/lte/rootfs-common/etc-board/src
 TCI6614_ETC_BOARD_DEST_PATH=/home/chum/work/lte/rootfs/etc/board
 LPC3250_ETC_BOARD_DEST_PATH=/home/chum/work/lte/lpc3250/rootfs/etc/board
 
