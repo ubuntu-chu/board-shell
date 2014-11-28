@@ -19,7 +19,7 @@ cpu_id_force_value=
 
 #board_id_force_value 当board_id_force_value不为空时，board_id会强制使用此值
 #否则 则会使用在rsS.define文件中所定义的来源值
-board_id_force_value=none
+board_id_force_value=
 
 #boardinfo definition table -- start; with a space as a delimiter
 board_id    cpu_id      project       cpu_name     host_name      network			  proc

@@ -4,55 +4,52 @@
 #
 
 #build time; rootfs build time
-build_time=2014-11-28 08:32:34
+build_time=2014-11-28 13:33:46
 
 #with a space as a delimiter
-#gpios for cpu identify ; 仅当cpu_id来源为gpio(即板载拨码开关时)有效
-#注意：gpio_pin_list 的数目必须与sys_class_gpio_file_list的数目相同
 gpio_pin_list=3 4 5 6
-#gpio引脚在/sys/class/gpio/中产生的目录名称
+#/sys/class/gpio/  
+#with a space as a delimiter
 sys_class_gpio_file_list=p0.3 p0.4 p0.5 p0.6
 
-#cpu_id_force_value 当cpu_id_force_value不为空时，cpu_id会强制使用此值
-#否则 则会使用在rsS.define文件中所定义的来源值
+#cpu_id_force_value 
 cpu_id_force_value=
 
-#board_id_force_value 当board_id_force_value不为空时，board_id会强制使用此值
-#否则 则会使用在rsS.define文件中所定义的来源值
+#board_id_force_value
 board_id_force_value=
 
+#please do not modify
 #boardinfo definition table -- start; with a space as a delimiter
-board_id    cpu_id      project       cpu_name     host_name      network			  proc
-none		0           lte           lpc3250      itl-none-0     network_none_0      proc_rru
+board_id    cpu_id      project       cpu_name     host_name      network	      proc
+none	    0           lte           lpc3250      itl-none-0     network_none_0      proc_rru
 0           0           lte           lpc3250      itl-rru1       network_0_0         proc_rru
-1			0           lte           lpc3250      itl-rru2       network_1_0         proc_rru
-2			0           lte           lpc3250      itl-ccu        network_2_0         proc_ccu
+1	    0           lte           lpc3250      itl-rru2       network_1_0         proc_rru
+2           0           lte           lpc3250      itl-ccu        network_2_0         proc_ccu
 #boardinfo definition tabel -- end
 
-#proc_none：代表不产生/proc下相应目录与文件
-#proc中的条目为key=value格式  
-#每一个key代表/proc/$COMPANY/目录下的一个文件 value为该文件的值
-#注意：value的值里面不能含有空格  否则会造成错误！
+#please do not modify
 proc_rru={
 	board_type=1000
 	hardware=3
 }
 
+#please do not modify
 proc_ccu={
 	board_type=2000
 	hardware=3
 }
 
-#MAC地址:6个字节，分成两段，各三个字节
-#第一段 一个字节用来标识生产厂商（OUI-Organistionally Unique Identifier)(本应占用三个字节;在此做变通 使用一个字节)
-#第二段 两个字节, 批次  用于定义产品的生产批次   在有些项目中 可能未使用
-#第三段 一个字节，序列号  用于定义同一生产批次下 的序列号
-#第四段 一个字节  board_id  值由board info table提供
-#第五段 一个字节  低4位值为cpu_id  高4位值用于多网卡区分 最多可识别16个网卡
+#please do not modify
+#mac_rule={mac_oui(one byte):mac_batch(two bytes):mac_seq(one byte):mac_board_id(one byte):mac_lowest(one byte)}
+#mac_board_id_rule={when board_id != none, mac_board_id = board_id. otherwise mac_board_id = ff}
+#mac_lowest_rule={mac_nic(high 4 bits)|mac_cpu_id(low 4 bits)}
+#mac_nic_rule={the initial value is 00, each NIC increase 10}
+#mac_cpu_id_rule={mac_cpu_id = cpu_id}
 mac_oui=80
 mac_batch_seq=17:00:00
 
-#network   命名规则：network_boardid_cpuid
+#network   named rule:network_boardid_cpuid
+#please do not modify hwaddress line
 network_0_0={
 	# The loopback interface
 	auto lo
@@ -66,9 +63,9 @@ network_0_0={
 	network 192.192.192.0
 	gateway 192.192.192.201
 	hwaddress XX:XX:XX:XX:XX:XX
-
 }
 
+#please do not modify hwaddress line
 network_1_0={
 	# The loopback interface
 	auto lo
@@ -84,6 +81,7 @@ network_1_0={
 	hwaddress XX:XX:XX:XX:XX:XX
 }
 
+#please do not modify hwaddress line
 network_2_0={
 	# The loopback interface
 	auto lo
@@ -99,6 +97,7 @@ network_2_0={
 	hwaddress XX:XX:XX:XX:XX:XX
 }
 
+#please do not modify hwaddress line
 network_none_0={
 	# The loopback interface
 	auto lo
