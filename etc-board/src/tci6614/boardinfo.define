@@ -1,6 +1,5 @@
-#board info configuration
 #
-# ver:1.1.0
+#   板载信息配置文件--修改后请执行validate-boardinfo.sh脚本,验证修改是否正确
 #
 
 #build time; rootfs build time
@@ -9,8 +8,10 @@ build_time=2014-11-28 08:32:49
 #with a space as a delimiter
 #gpios for cpu identify ; 仅当cpu_id来源为gpio(即板载拨码开关时)有效
 #注意：gpio_pin_list 的数目必须与sys_class_gpio_file_list的数目相同
+#      参数中间必须使用空格作为分隔符
 gpio_pin_list=17 18
 #gpio引脚在/sys/class/gpio/中产生的目录名称
+#注意：参数中间必须使用空格作为分隔符
 sys_class_gpio_file_list=gpio17 gpio18
 
 #cpu_id_force_value 当cpu_id_force_value不为空时，cpu_id会强制使用此值
@@ -21,16 +22,19 @@ cpu_id_force_value=
 #否则 则会使用在rsS.define文件中所定义的来源值
 board_id_force_value=none
 
+#一般情况，请不要修改此板载信息定义表
+#表中各列之间使用空格作为分隔符
 #boardinfo definition table -- start; with a space as a delimiter
 board_id    cpu_id      project       cpu_name     host_name      network			  proc
-none		0           lte           tci6614      itl-bbu        network_none_0      proc_bbu
-none		3           lte           tci6614      itl-mesh       network_none_3      proc_none
+none		0           lte           tci6614      itl-bbu        network_bbu         proc_bbu
+none		3           lte           tci6614      itl-mesh       network_mesh        proc_none
 #boardinfo definition tabel -- end
 
 #proc_none：代表不产生/proc下相应目录与文件
 #proc中的条目为key=value格式  
 #每一个key代表/proc/$COMPANY/目录下的一个文件 value为该文件的值
 #注意：value的值里面不能含有空格  否则会造成错误！
+#      一般情况下，请不要修改
 proc_bbu={
 	board_type=itl-bbu
 	hardware=3
@@ -50,9 +54,9 @@ proc_mesh={
 mac_oui=80
 mac_batch_seq=16:00:00
 
-#network   命名规则：network_boardid_cpuid
-
-network_none_0={
+#network   
+#请不要修改 hwaddress这一行!
+network_bbu={
 	# The loopback interface
 	auto lo
 	iface lo inet loopback
@@ -75,7 +79,8 @@ network_none_0={
 	gateway 172.30.0.1
 }
 
-network_none_3={
+#请不要修改 hwaddress这一行!
+network_mesh={
 	# The loopback interface
 	auto lo
 	iface lo inet loopback

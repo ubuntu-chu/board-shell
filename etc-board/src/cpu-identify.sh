@@ -228,14 +228,14 @@ cpu_identify_proc(){
 	echo "    mac_cpu_id=$mac_cpu_id" >> $BOARD_INFO_FILE
 	echo "    ${NETWORK_KEY}=$network_value" >> $BOARD_INFO_FILE
 	echo "    ${proc_key}=${proc_value}" >> $BOARD_INFO_FILE
-
-	echo "}" >> $BOARD_INFO_FILE
-	
+	echo "    etc_board_shell_version=${VERSION}" >> $BOARD_INFO_FILE
 	#get item line
 	build_time=`grep -E "^\<${BUILD_TIME_KEY}\>" $BOARD_INFO_SRC_FILE`
 	if [ ! -z "$build_time" ]; then
-		echo $build_time >> $BOARD_INFO_FILE
+		echo "    $build_time" >> $BOARD_INFO_FILE
 	fi
+
+	echo "}" >> $BOARD_INFO_FILE
 	
 	echo "" >> $BOARD_INFO_FILE
 
