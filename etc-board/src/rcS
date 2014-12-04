@@ -90,6 +90,7 @@ CPU_ID=""
 PROC_LINE=""
 PROC_LINE_VALUE=""
 
+#如果发现错误情况 打印错误信息后 直接退出进程
 proc_line() 
 {
 	if [ $# -lt 2 ]; then
@@ -110,6 +111,30 @@ proc_line()
 	fi
 }
 
+#如果发现错误情况 不退出进程 而是返回
+proc_line_return() 
+{
+	if [ $# -lt 2 ]; then
+		debug echo "************$0 param cnt must >= 2************"
+		return 2
+	fi
+
+	#此处非严格的匹配
+	PROC_LINE=`grep "^ *$1=" $2`
+	if [ -z "$PROC_LINE" ]; then
+		debug echo "*******************************$key do not exist!please check $2 setting!*******************************"
+		return 1
+	fi
+#PROC_LINE_VALUE=${PROC_LINE#$key=}
+	PROC_LINE_VALUE=`echo $PROC_LINE|awk 'BEGIN{FS="="}{print $2}'`
+	if [ $# -eq 3 ]; then
+		echo $PROC_LINE_VALUE >> $3
+	fi
+
+	return 0
+}
+
+#处理/proc/cmdline文件信息
 proc_cmdline() 
 {
 	if [ $# -lt 1 ]; then

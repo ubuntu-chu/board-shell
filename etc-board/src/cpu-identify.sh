@@ -164,7 +164,7 @@ cpu_identify_proc(){
 		fi
 	fi
 
-	#当board_id不为none时  代表系统寄存器存在
+	#若系统寄存器存在  则解析系统寄存器 并将解析后的信息写入$BOARD_INFO_FILE文件中
 	if [ $SYS_REGS_EXIST -eq 1 ]; then
 		configuration_parse "all" $SHELL_COMM_FILE $BOARD_INFO_FILE
 	fi
@@ -252,49 +252,54 @@ echo "Starting cpu identify..."
 #调用脚本挂载app分区
 ${BOARD_ENTRY_SHELL_PATH}/${MOUNT_APP_PARTION_SHELL} $1
 
+#判断BOARD_ID_SOURCE来源
+if [ $BOARD_ID_SOURCE -eq $BOARD_ID_SOURCE_BOARD ]; then
+	#预先调用ETC_ENTRY_SHELL_VENDOR_PROC_SYS脚本 app可做些预备工作
+	if [ -x ${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS ]; then
+		echo -n "" > $SHELL_COMM_FILE
+
+		${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS prepare 
+		${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS configuration $SHELL_COMM_FILE
+		#判断返回值 是否支持读取配置
+		if [ $? -eq 0 ]; then
+			#支持配置读取 解析配置 在此函数中 要对board_id赋值
+			configuration_parse "board_id" $SHELL_COMM_FILE
+			#判断是否成功解析出board_id信息   此步也用于标识从fpga读取到的信息是否合法
+			if [ $? -eq 0 ]; then
+				#对BOARD_ID的值进行转换 符合boardinfo.define文件中的定义
+				if [ $BOARD_ID = $BOARD_ID_NONE_VALUE ]; then
+					BOARD_ID=$BOARD_ID_NONE_TEXT
+				fi
+				#信息合法  系统寄存器存在
+				SYS_REGS_EXIST=1
+			fi
+		else
+			#不支持配置读取  board_id为空值
+			BOARD_ID=$BOARD_ID_NONE_TEXT
+		fi
+		#rm -rf $SHELL_COMM_FILE	
+	fi
+else
+	#从系统命令行中获取
+	proc_cmdline_value $BOARD_ID_KEY 
+	if [ $? -ne 0 ]; then
+		exit 3
+	fi
+
+	BOARD_ID=$PROC_LINE_VALUE
+fi
+
 #get force value line
 proc_line $BOARD_ID_FORCE_VALUE_KEY $BOARD_INFO_SRC_FILE
 BOARD_ID_FORCE_VALUE=$PROC_LINE_VALUE
 
 #force value exist
+#若board id强制值存在 则使用强制值
 if [ ! -z $BOARD_ID_FORCE_VALUE ]; then
 	BOARD_ID=`echo ${BOARD_ID_FORCE_VALUE}|sed -e 's/ //g'`
 	#对BOARD_ID的值进行转换 符合boardinfo.define文件中的定义
 	if [ $BOARD_ID = $BOARD_ID_NONE_VALUE ]; then
 		BOARD_ID=$BOARD_ID_NONE_TEXT
-	fi
-else
-	#判断BOARD_ID_SOURCE来源
-	if [ $BOARD_ID_SOURCE -eq $BOARD_ID_SOURCE_BOARD ]; then
-		#预先调用ETC_ENTRY_SHELL_VENDOR_PROC_SYS脚本 app可做些预备工作
-		if [ -x ${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS ]; then
-			echo -n "" > $SHELL_COMM_FILE
-
-			${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS prepare 
-			${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS configuration $SHELL_COMM_FILE
-			#判断返回值 是否支持读取配置
-			if [ $? -eq 0 ]; then
-				#支持配置读取 解析配置 在此函数中 要对board_id赋值
-				configuration_parse "board_id" $SHELL_COMM_FILE
-				#对BOARD_ID的值进行转换 符合boardinfo.define文件中的定义
-				if [ $BOARD_ID = $BOARD_ID_NONE_VALUE ]; then
-					BOARD_ID=$BOARD_ID_NONE_TEXT
-				fi
-				SYS_REGS_EXIST=1
-			else
-				#不支持配置读取  board_id为空值
-				BOARD_ID=$BOARD_ID_NONE_TEXT
-			fi
-			#rm -rf $SHELL_COMM_FILE	
-		fi
-	else
-		#从系统命令行中获取
-		proc_cmdline_value $BOARD_ID_KEY 
-		if [ $? -ne 0 ]; then
-			exit 3
-		fi
-
-		BOARD_ID=$PROC_LINE_VALUE
 	fi
 fi
 
