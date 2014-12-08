@@ -14,6 +14,16 @@ SYS_CLASS_GPIO_FILE_ARRAY=()
 BOARD_ID=$BOARD_ID_NONE_TEXT
 SYS_REGS_EXIST=0
 
+section_content_get()
+{
+	#awk '/^'${1}'=\{/,/^\}/ {print $0}' "${2}"\
+	#	| sed '1d;$d;s/^[[:space:]]*//' | sed 's/ *= \+\(\w\)/=\1/'\
+	#	| awk '{print $0 >> "'"${3}"'"}'
+	awk '/^'${1}'=\{/,/^\}/ {print $0}' "${2}"\
+		| sed '1d;$d' | sed "s/^[[:space:]]*//" | sed "s/ *= */=/"\
+		| awk '{print $0 >> "'"${3}"'"}'
+}
+
 #cpu 信息处理函数
 #形  参:
 #        $1    board_id
@@ -75,16 +85,21 @@ cpu_identify_proc(){
 	while true
 	do
 		#将除proc之外的列写入到$BOARD_INFO_FILE
-		if [ ${item_array[$index]} != ${PROC_KEY} -a  ${item_array[$index]} != ${NETWORK_KEY} ]; then
+		if [ ${item_array[$index]} != ${PRIV_KEY} -a ${item_array[$index]} != ${PROC_KEY} -a  ${item_array[$index]} != ${NETWORK_KEY} ]; then
 			#将数组中的内容写入到文件中
 			echo "    ${item_array[$index]}=${value_array[$index]}" >> $BOARD_INFO_FILE
 		else 
 			if [ ${item_array[$index]} = ${NETWORK_KEY} ]; then
 				#记录network列的索引
 				network_index=$index
-			else
-				#记录proc列的索引
-				proc_index=$index
+			else 
+				if [ ${item_array[$index]} = ${PRIV_KEY} ]; then
+					#记录priv列的索引
+					priv_index=$index
+				else
+					#记录proc列的索引
+					proc_index=$index
+				fi
 			fi
 		fi
 		let "index = $index + 1"
@@ -178,13 +193,39 @@ cpu_identify_proc(){
 
 		#tee命令  从标准输入中读取并同时写入到标准输出和指定的文件上
 		#-a,--append:不覆盖，而是追加输出到指定的文件中
-		proc_content=`awk '/^'${proc_value}'=\{/,/^\}/ {print $0}' "${BOARD_INFO_SRC_FILE}"\
-			| sed '1d;s/^[[:space:]]*//' | sed '1,$ s/^/    /;s/= \+\(\w\)/=\1/' | sed '$ s/^[[:space:]]*//' \
-			| awk '{print $0}' | tee -a ${BOARD_INFO_FILE}`
+		#proc_content=`awk '/^'${proc_value}'=\{/,/^\}/ {print $0}' "${BOARD_INFO_SRC_FILE}"\
+		#	| sed '1d;$d;s/^[[:space:]]*//' | sed '1,$ s/^/    /;s/ *= \+\(\w\)/=\1/'\
+		#	| awk '{print $0}' | tee -a ${BOARD_INFO_FILE}`
+		#debug echo "before proc_content=$proc_content"
+		#proc_content=`echo $proc_content|tr -d "{}"| tr -s " "| tr " " ":"|sed 's/:$//'`
 
-		debug echo "before proc_content=$proc_content"
-		proc_content=`echo $proc_content|tr -d "{}"| tr -s " "| tr " " ":"|sed 's/:$//'`
-		debug echo "after proc_content=$proc_content"
+		echo -n "" > $SHELL_PROC_SYS_FILE	
+		echo -n "" > $SHELL_PROC_FILE
+		section_content_get $proc_value $BOARD_INFO_SRC_FILE $SHELL_PROC_SYS_FILE
+		#获取应用中定义的proc文件
+		if [ -x ${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS ]; then
+			${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS proc $SHELL_PROC_FILE
+		fi
+		first_add=0
+		for file in $SHELL_PROC_SYS_FILE $SHELL_PROC_FILE
+		do
+			#去除首部的空格  以及=号前后的空格
+			sed -i "s/^[[:space:]]*//;s/ *= */=/" $file
+
+			while read line
+			do
+				debug echo $line
+				if [ $first_add -eq 0 ]; then
+					proc_content=$line
+					first_add=1
+				else
+					#若proc_content中含有空格 则if [ -z $proc_content ]语句判断失效
+					proc_content="$proc_content":$line
+				fi
+				echo "    $line" >> $BOARD_INFO_FILE
+			done  < $file
+		done
+		debug echo "proc_content=$proc_content"
 		#判断内核当前是否已经加载了此内核模块 若已加载 则先卸载
 		#删除可能存在的双引号
 		PROC_MODULE=`echo $PROC_MODULE|tr -d \"`
@@ -193,6 +234,35 @@ cpu_identify_proc(){
 			rmmod $BOARD_ENTRY_SHELL_PATH/${PROC_MODULE}
 		fi
 		insmod $BOARD_ENTRY_SHELL_PATH/${PROC_MODULE}.ko proc_dir=${COMPANY} files_list=${proc_content}
+		echo "}" >> $BOARD_INFO_FILE
+	fi
+
+	#处理priv列字段
+	priv_value=${value_array[$priv_index]}
+	priv_key=${item_array[$priv_index]}
+	if [ ! ${priv_value} = $PRIV_NONE_VALUE ]; then
+		echo "${priv_key}={" >> $BOARD_INFO_FILE
+
+		echo -n "" > $SHELL_PRIV_SYS_FILE	
+		echo -n "" > $SHELL_PRIV_FILE
+		section_content_get $priv_value $BOARD_INFO_SRC_FILE $SHELL_PRIV_SYS_FILE
+
+		#获取应用中定义的priv文件
+		if [ -x ${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS ]; then
+			${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS priv $SHELL_PRIV_FILE
+		fi
+		for file in $SHELL_PRIV_SYS_FILE $SHELL_PRIV_FILE
+		do
+			#去除首部的空格  以及=号前后的空格
+			sed -i "s/^[[:space:]]*//;s/ *= */=/" $file
+
+			while read line
+			do
+				debug echo $line
+				echo "    $line" >> $BOARD_INFO_FILE
+			done  < $file
+		done
+		echo "}" >> $BOARD_INFO_FILE
 	fi
 
 	#加入debug信息
@@ -228,6 +298,7 @@ cpu_identify_proc(){
 	echo "    mac_cpu_id=$mac_cpu_id" >> $BOARD_INFO_FILE
 	echo "    ${NETWORK_KEY}=$network_value" >> $BOARD_INFO_FILE
 	echo "    ${proc_key}=${proc_value}" >> $BOARD_INFO_FILE
+	echo "    ${priv_key}=${priv_value}" >> $BOARD_INFO_FILE
 	echo "    etc_board_shell_version=${VERSION}" >> $BOARD_INFO_FILE
 	#get item line
 	build_time=`grep -E "^\<${BUILD_TIME_KEY}\>" $BOARD_INFO_SRC_FILE`

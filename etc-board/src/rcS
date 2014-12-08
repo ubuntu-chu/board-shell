@@ -6,10 +6,10 @@
 . /etc/board/rcS.define
 
 #下面的配置为通用配置部分   注意要求应用程序的文件夹架构必须一致！
-VERSION="v1.0.0"
+VERSION="v1.0.1"
 
 #默认PATH文件定义
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/etc/init.d:/etc/board
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:$ETC_ENTRY_SHELL_PATH:/etc/board
 
 #app分区
 export APP_MOUNT_POINT=/opt
@@ -43,10 +43,15 @@ PROC_MODULE=proc_module
 #vendor entry shell
 ETC_ENTRY_SHELL_VENDOR_PROC_SYS=vendor-sys-proc
 #挂载app分区脚本
-MOUNT_APP_PARTION_SHELL=mount-app.sh
+MOUNT_APP_PARTION_SHELL=app-mount.sh
+ETC_APP_ENTRY_SHELL=app-entry.sh
 
 #通讯用文件
-SHELL_COMM_FILE=/etc/board/sys-regs
+SHELL_COMM_FILE=/var/run/sys-regs
+SHELL_PROC_FILE=/var/run/proc-app-file
+SHELL_PROC_SYS_FILE=/var/run/proc-sys-file
+SHELL_PRIV_FILE=/var/run/priv-app-file
+SHELL_PRIV_SYS_FILE=/var/run/priv-sys-file
 
 
 #boardinfo file
@@ -59,6 +64,8 @@ BOARD_ID_KEY="board_id"
 BOARD_ID_FORCE_VALUE_KEY="board_id_force_value"
 PROC_KEY="proc"
 PROC_NONE_VALUE="proc_none"
+PRIV_KEY="priv"
+PRIV_NONE_VALUE="priv_none"
 CPU_NAME_KEY="cpu_name"
 
 #board_id为空时对应的boardinfo table中文本
