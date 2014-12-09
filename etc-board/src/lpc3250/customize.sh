@@ -25,3 +25,7 @@ ln -s -f ${BOARD_ENTRY_SHELL_PATH}/${CPU_IDENTIFY_SHELL} ${ETC_ENTRY_SHELL_PATH}
 ln -s -f ${BOARD_ENTRY_SHELL_PATH}/${PRIVATE_SHELL} ${ETC_ENTRY_SHELL_PATH}/${PRIVATE_SHELL}
 
 
+#创建软连接 -- boot环境变量配置文件
+ln -s -f ${BOARD_ENTRY_SHELL_PATH}/fw_env.config /etc/fw_env.config
+
+
