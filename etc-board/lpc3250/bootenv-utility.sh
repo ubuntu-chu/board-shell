@@ -112,7 +112,7 @@ ubootenv_modify()
 		#更改失败
 		return 1
 	fi
-	echo " sucess"
+	echo " success"
 
 	return 0
 }

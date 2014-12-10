@@ -313,6 +313,11 @@ cpu_identify_proc(){
 	echo "    ${proc_key}=${proc_value}" >> $BOARD_INFO_FILE
 	echo "    ${priv_key}=${priv_value}" >> $BOARD_INFO_FILE
 	echo "    etc_board_shell_version=${VERSION}" >> $BOARD_INFO_FILE
+
+	proc_cmdline_value $BOOTLOADER_VER_KEY 
+	if [ $? -eq 0 ]; then
+		echo "    bootloader_version=${PROC_LINE_VALUE}" >> $BOARD_INFO_FILE
+	fi
 	#get item line
 	build_time=`grep -E "^\<${BUILD_TIME_KEY}\>" $BOARD_INFO_SRC_FILE`
 	if [ ! -z "$build_time" ]; then

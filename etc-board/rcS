@@ -64,6 +64,7 @@ export BOARD_INFO_FILE="/var/run/boardinfo"
 PROJECT_KEY="project"
 BOARD_TYPE_KEY="board_type"
 CPU_ID_KEY="cpu_id"
+BOOTLOADER_VER_KEY="bootloader_ver"
 BOARD_ID_KEY="board_id"
 BOARD_ID_FORCE_VALUE_KEY="board_id_force_value"
 PROC_KEY="proc"
@@ -149,13 +150,13 @@ proc_line_return()
 proc_cmdline() 
 {
 	if [ $# -lt 1 ]; then
-		echo "************$0 param cnt must >= 1************"
+		debug echo "************$0 param cnt must >= 1************"
 		return 2
 	fi
 
 	PROC_LINE=`cat $SYS_CMDLINE_FILE |tr " " "\n"|grep $1`
 	if [ -z "$PROC_LINE" ]; then
-		echo "*******$1 do not exsit in $SYS_CMDLINE_FILE! plese check uboot!*******"
+		debug echo "*******$1 do not exsit in $SYS_CMDLINE_FILE! plese check uboot!*******"
 		return 1
 	fi
 
@@ -171,7 +172,7 @@ proc_cmdline_value()
 
 	PROC_LINE_VALUE=`echo $PROC_LINE|awk 'BEGIN{FS="="}{print $2}'`
 	if [ -z "$PROC_LINE_VALUE" ]; then
-		echo "*******$1 do not have value in $SYS_CMDLINE_FILE! plese check uboot!*******"
+		debug echo "*******$1 do not have value in $SYS_CMDLINE_FILE! plese check uboot!*******"
 		return 3
 	fi
 
