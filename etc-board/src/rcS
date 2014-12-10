@@ -16,6 +16,9 @@ export APP_MOUNT_POINT=/opt
 export APP_PARTION_NAME=app
 export FLASH_DIR=/var/flash
 
+#kernel分区
+export KERNEL_PARTION_NAME=kernel
+
 #gpio class路径
 GPIO_CLASS_PATH=/sys/class/gpio
 #/proc路径
@@ -48,10 +51,11 @@ ETC_APP_ENTRY_SHELL=app-entry.sh
 
 #通讯用文件
 SHELL_COMM_FILE=/var/run/sys-regs
-SHELL_PROC_FILE=/var/run/proc-app-file
-SHELL_PROC_SYS_FILE=/var/run/proc-sys-file
-SHELL_PRIV_FILE=/var/run/priv-app-file
-SHELL_PRIV_SYS_FILE=/var/run/priv-sys-file
+SHELL_PROC_FILE=/var/run/app-proc-file
+SHELL_PROC_SYS_FILE=/var/run/sys-proc-file
+SHELL_PRIV_FILE=/var/run/app-priv-file
+SHELL_DEBUG_FILE=/var/run/app-debug-file
+SHELL_PRIV_SYS_FILE=/var/run/sys-priv-file
 
 
 #boardinfo file
@@ -83,7 +87,7 @@ HOSTNAME_DEST_FILE="/etc/hostname"
 NETWORK_KEY="network"
 HOSTNAME_KEY="host_name"
 CPU_ID_FORCE_VALUE_KEY="cpu_id_force_value"
-BUILD_TIME_KEY="build_time"
+BUILD_TIME_KEY="rootfs_img_build_time"
 
 MAC_OUI_KEY="mac_oui"
 MAC_BATCH_SEQ_KEY="mac_batch_seq"

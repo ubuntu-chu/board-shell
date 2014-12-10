@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. /usr/sbin/partion_utility.sh
+
 help(){
 	echo "Usage                 : $0 <mtd_partion_name> <flash_file>"
 	echo "Param mtd_partion_name: partion_name in (cat /proc/mtd)"
@@ -19,37 +21,33 @@ if [ ! -r $2 ]; then
 fi
 
 RECOVER_MTD_PART_NAME=$1
-MTD_PART_INDEX=0
-MTD_PART_FIND=0
 
-while true
-do
-	if [ -c /dev/mtd$MTD_PART_INDEX ]; then
-		MTD_NAME=`mtdinfo /dev/mtd$MTD_PART_INDEX|awk '$1=="Name:"{print}'|awk '{print $2}'`
-		if [ $MTD_NAME = $RECOVER_MTD_PART_NAME ]; then
-			MTD_PART_FIND=1
-			break
-		else
-			let "MTD_PART_INDEX=MTD_PART_INDEX+1"
-		fi
-	else 
-		break
-	fi
+partion_find $RECOVER_MTD_PART_NAME
 
-done
-
-if [ $MTD_PART_FIND -ne 1 ]; then
-	echo "mtd partion<$RECOVER_MTD_PART_NAME> can not find!"
+if [ $? -ne 0 ]; then
 	exit 3
 fi
 
-echo "flash_eraseall /dev/mtd$MTD_PART_INDEX"
-flash_eraseall /dev/mtd$MTD_PART_INDEX
+echo "flash_eraseall $PARTION_DEV_FILE"
+flash_eraseall $PARTION_DEV_FILE
 
-echo "flashcp -v $2 /dev/mtd$MTD_PART_INDEX"
-flashcp -v $2 /dev/mtd$MTD_PART_INDEX
+case "$RECOVER_MTD_PART_NAME" in
+	$KERNEL_PARTION_NAME)
+		echo "nandwrite -p $PARTION_DEV_FILE $2"
+		nandwrite -p $PARTION_DEV_FILE $2
+		;;
+	
+	*)
+		echo "flashcp -v $2 $PARTION_DEV_FILE"
+		flashcp -v $2 $PARTION_DEV_FILE
+		;;
+esac
 
-echo "mtd partion<$RECOVER_MTD_PART_NAME> flash finish, you can press <reboot> to reboot now!"
+if [ $? -eq 0 ]; then
+	echo "mtd partion<$RECOVER_MTD_PART_NAME> flash finish, you can press <reboot> to reboot now!"
+else
+	echo "flashcp failed! please check what happened!"
+fi
 
 
 

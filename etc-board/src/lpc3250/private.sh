@@ -4,7 +4,7 @@
 # 
 #
 
-. /etc/board/bootenv-modify.sh
+. /etc/board/bootenv-utility.sh
 
 
 if [ "$1" = "start" ]; then
@@ -31,6 +31,7 @@ if [ "$1" = "start" ]; then
 		fi
 	done
 fi
+
 
 exit 0
 

@@ -3,7 +3,7 @@
 #
 
 #build time; rootfs build time
-build_time=2014-11-28 08:32:49
+rootfs_img_build_time=2014-11-28 08:32:49
 
 #with a space as a delimiter
 #gpios for cpu identify ; 仅当cpu_id来源为gpio(即板载拨码开关时)有效

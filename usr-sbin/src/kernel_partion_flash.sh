@@ -15,11 +15,10 @@ remove_flashfile()
 	fi
 }
 
-DEF_FLASH_FILE=itl-rootfs.img
+DEF_FLASH_FILE=itl-lpc3250-uImage
 FLASH_FILE=$DEF_FLASH_FILE
 DEL_FLASH_FILE=1
-FLASH_MTD_PARTION_NAME=$ROOTFS_PARTION_NAME
-UBI_NAME=$ROOTFS_MOUNT_NAME
+FLASH_MTD_PARTION_NAME=$KERNEL_PARTION_NAME
 
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	help
@@ -27,13 +26,6 @@ fi
 
 if [ $# -eq 2 ]; then
 	FLASH_FILE=$2
-fi
-
-#检查rootfs是否已经挂载  
-cat /proc/mounts|awk '{print $1}'|grep "$UBI_NAME" > /dev/null
-if [ $? -eq 0 ]; then
-	echo "$UBI_NAME mounted, can not flash mtd partion<$FLASH_MTD_PARTION_NAME>"
-	exit 3
 fi
 
 cd $FLASH_DIR
@@ -57,7 +49,7 @@ fi
 ftype=`file "$FLASH_FILE"`
 
 case "$ftype" in
-	*"Linux jffs2 filesystem"*)
+	*"OS Kernel Image"*)
 		echo "$ftype"
 		;;
 

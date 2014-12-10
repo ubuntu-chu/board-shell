@@ -19,9 +19,35 @@ section_content_get()
 	#awk '/^'${1}'=\{/,/^\}/ {print $0}' "${2}"\
 	#	| sed '1d;$d;s/^[[:space:]]*//' | sed 's/ *= \+\(\w\)/=\1/'\
 	#	| awk '{print $0 >> "'"${3}"'"}'
+	#去除=号左右的空格
 	awk '/^'${1}'=\{/,/^\}/ {print $0}' "${2}"\
 		| sed '1d;$d' | sed "s/^[[:space:]]*//" | sed "s/ *= */=/"\
 		| awk '{print $0 >> "'"${3}"'"}'
+}
+
+app_define_files_add()
+{
+	#获取应用中定义的priv文件
+	if [ -x ${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS ]; then
+		${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS "$1" "$2"
+	fi
+
+	debug echo "shift before \$@ = $@"
+	shift
+	shift
+	debug echo "shift after \$@ = $@"
+
+	for file in $@
+	do
+		#去除首部的空格  以及=号前后的空格
+		sed -i "s/^[[:space:]]*//;s/ *= */=/" $file
+
+		while read line
+		do
+			debug echo $line
+			echo "    $line" >> $BOARD_INFO_FILE
+		done  < $file
+	done
 }
 
 #cpu 信息处理函数
@@ -248,20 +274,7 @@ cpu_identify_proc(){
 		section_content_get $priv_value $BOARD_INFO_SRC_FILE $SHELL_PRIV_SYS_FILE
 
 		#获取应用中定义的priv文件
-		if [ -x ${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS ]; then
-			${ETC_APP_ENTRY_SHELL_PATH}/$ETC_ENTRY_SHELL_VENDOR_PROC_SYS priv $SHELL_PRIV_FILE
-		fi
-		for file in $SHELL_PRIV_SYS_FILE $SHELL_PRIV_FILE
-		do
-			#去除首部的空格  以及=号前后的空格
-			sed -i "s/^[[:space:]]*//;s/ *= */=/" $file
-
-			while read line
-			do
-				debug echo $line
-				echo "    $line" >> $BOARD_INFO_FILE
-			done  < $file
-		done
+		app_define_files_add "priv" "$SHELL_PRIV_FILE" "$SHELL_PRIV_SYS_FILE" "$SHELL_PRIV_FILE"
 		echo "}" >> $BOARD_INFO_FILE
 	fi
 
@@ -305,6 +318,8 @@ cpu_identify_proc(){
 	if [ ! -z "$build_time" ]; then
 		echo "    $build_time" >> $BOARD_INFO_FILE
 	fi
+	#获取应用中定义的debug文件
+	app_define_files_add "debug" "$SHELL_DEBUG_FILE" "$SHELL_DEBUG_FILE"
 
 	echo "}" >> $BOARD_INFO_FILE
 	

@@ -15,6 +15,14 @@ killapp(){
 	sleep 2
 }
 
+removepackage()
+{
+	if [ $DEL_PACKAGE_FILE -eq 1 ]; then
+		echo "rm -rf $PACKAGE_FILE"
+		rm -rf $PACKAGE_FILE
+	fi
+}
+
 DEF_PACKAGE_FILE=V2642.tar.gz
 PACKAGE_FILE=$DEF_PACKAGE_FILE
 DEL_PACKAGE_FILE=1
@@ -56,19 +64,34 @@ if [ ! -r $PACKAGE_FILE ]; then
 	fi
 fi
 
-killapp
+ftype=`file "$PACKAGE_FILE"`
 
+#目前暂不支持bz压缩格式
+case "$ftype" in
+	*"gzip compressed"*)
+		tar_opt="zxvf"
+		;;
+
+	#*"bzip2 compressed"*)
+		#tar_opt="jxvf"
+		#;;
+
+	*) 
+		echo "$ftype:invalid compressed format! please check!"
+		removepackage
+		exit 3
+		;;
+esac
+
+killapp
 echo "rm -rf $APP_MOUNT_POINT/*"
 rm -rf $APP_MOUNT_POINT/*
 
-tar zxvf $PACKAGE_FILE -C /
+echo "tar $tar_opt $PACKAGE_FILE -C /"
+tar $tar_opt $PACKAGE_FILE -C /
 
 if [ $? -eq 0 ]; then
-	if [ $DEL_PACKAGE_FILE -eq 1 ]; then
-		echo "rm -rf $PACKAGE_FILE"
-		rm -rf $PACKAGE_FILE
-	fi
+	removepackage
 fi
-
 
 

@@ -4,14 +4,13 @@
 # 
 #
 
-. /etc/board/bootenv-modify.sh
+. /etc/board/bootenv-utility.sh
 
 ubootenv_modify bootcmd "run normalboot"
 if [ $? -ne 0 ];then
-	echo "uboot env set error! please check what happened!"
 	exit 1
 else
-	echo "reboot to enter recovery mode"
+	echo "reboot to enter normal mode"
 	reboot
 fi
 

@@ -37,6 +37,14 @@ killapp(){
 	sleep 2
 }
 
+remove_flashfile()
+{
+	if [ $DEL_FLASH_FILE -eq 1 ]; then
+		echo "rm -rf $FLASH_FILE"
+		rm -rf $FLASH_FILE
+	fi
+}
+
 DEF_FLASH_FILE=itl-app.img
 FLASH_FILE=$DEF_FLASH_FILE
 DEL_FLASH_FILE=1
@@ -68,6 +76,20 @@ if [ ! -r $FLASH_FILE ]; then
 	fi
 fi
 
+ftype=`file "$FLASH_FILE"`
+
+case "$ftype" in
+	*"Linux jffs2 filesystem"*)
+		echo "$ftype"
+		;;
+
+	*) 
+		echo "$ftype:invalid compressed format! please check!"
+		remove_flashfile
+		exit 3
+		;;
+esac
+
 killapp
 
 #check /opt 
@@ -84,10 +106,7 @@ fi
 partion_flash.sh $FLASH_MTD_PARTION_NAME $FLASH_FILE
 
 if [ $? -eq 0 ]; then
-	if [ $DEL_FLASH_FILE -eq 1 ]; then
-		echo "rm -rf $FLASH_FILE"
-		rm -rf $FLASH_FILE
-	fi
+	remove_flashfile
 fi
 
 
