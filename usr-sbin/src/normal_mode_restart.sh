@@ -6,7 +6,7 @@
 
 . /etc/board/bootenv-utility.sh
 
-ubootenv_modify bootcmd "run normalboot"
+ubootenv_modify bootcmd "auto_saveenv&&run normalboot"
 if [ $? -ne 0 ];then
 	exit 1
 else

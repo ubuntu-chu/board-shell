@@ -6,7 +6,7 @@
 
 . /etc/board/bootenv-utility.sh
 
-ubootenv_modify bootcmd "run recoverboot"
+ubootenv_modify bootcmd "auto_saveenv&&run recoverboot"
 if [ $? -ne 0 ];then
 	echo "uboot env set error! please check what happened!"
 	exit 1

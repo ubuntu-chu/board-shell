@@ -59,9 +59,15 @@ ubootenv_modify()
 	uboot_env_check_file="/var/run/ubootenv_check_file"
 	uboot_env_original_file="/var/run/ubootenv_original_file"
 
-	fw_printenv > $uboot_env_original_file
+	fw_printenv > $uboot_env_original_file 2>&1
 
+	egrep "Warning:.*Bad.*CRC" $uboot_env_original_file > /dev/null
+	if [ $? -eq 0 ]; then
+		echo "bootenv crc check failed! so discard changes and exit"
+		return 2	
+	fi
 	#因为uboot版本可能老旧的原因  org_value 可以不存在
+	#uboot_env_original_file中如果出现crc错误 则直接退出 不能再继续执行修改
 	proc_line_return ${1} ${uboot_env_original_file}
 	if [ $? -eq 0 ]; then
 		org_value=$PROC_LINE_VALUE

@@ -77,5 +77,6 @@ ncscope.*
 .svn/
 vmlinux.o
 
+rootfs_update_lpc3250/
 
 
