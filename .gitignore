@@ -78,5 +78,6 @@ ncscope.*
 vmlinux.o
 
 rootfs_update_lpc3250/
+itl-lpc3250-rootfs-update.tar.gz
 
 
