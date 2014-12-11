@@ -26,6 +26,7 @@ removepackage()
 DEF_PACKAGE_FILE=V2642.tar.gz
 PACKAGE_FILE=$DEF_PACKAGE_FILE
 DEL_PACKAGE_FILE=1
+tar_opt="zxvf"
 
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	help
@@ -64,6 +65,9 @@ if [ ! -r $PACKAGE_FILE ]; then
 	fi
 fi
 
+which file > /dev/null
+if [ $? -eq 0 ]; then
+
 ftype=`file "$PACKAGE_FILE"`
 
 #目前暂不支持bz压缩格式
@@ -82,6 +86,7 @@ case "$ftype" in
 		exit 3
 		;;
 esac
+fi
 
 killapp
 echo "rm -rf $APP_MOUNT_POINT/*"

@@ -374,6 +374,7 @@ else
 	#从系统命令行中获取
 	proc_cmdline_value $BOARD_ID_KEY 
 	if [ $? -ne 0 ]; then
+		echo "$BOARD_ID_KEY do not exsit in $SYS_CMDLINE_FILE!"
 		exit 3
 	fi
 
@@ -482,6 +483,7 @@ else
 		#从系统命令行中获取
 		proc_cmdline_value $CPU_ID_KEY 
 		if [ $? -ne 0 ]; then
+			echo "$CPU_ID_KEY do not exsit in $SYS_CMDLINE_FILE!"
 			exit 3
 		fi
 

@@ -54,6 +54,9 @@ if [ ! -r $FLASH_FILE ]; then
 	fi
 fi
 
+which file > /dev/null
+if [ $? -eq 0 ]; then
+
 ftype=`file "$FLASH_FILE"`
 
 case "$ftype" in
@@ -67,6 +70,7 @@ case "$ftype" in
 		exit 3
 		;;
 esac
+fi
 
 partion_flash.sh $FLASH_MTD_PARTION_NAME $FLASH_FILE
 

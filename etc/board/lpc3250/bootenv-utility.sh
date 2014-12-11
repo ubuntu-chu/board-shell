@@ -59,6 +59,11 @@ ubootenv_modify()
 	uboot_env_check_file="/var/run/ubootenv_check_file"
 	uboot_env_original_file="/var/run/ubootenv_original_file"
 
+	which fw_printenv > /dev/null
+	if [ $? -ne 0 ]; then
+		echo "fw_printenv command not found!"
+		return 4
+	fi
 	fw_printenv > $uboot_env_original_file 2>&1
 
 	egrep "Warning:.*Bad.*CRC" $uboot_env_original_file > /dev/null
