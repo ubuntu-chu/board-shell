@@ -4,9 +4,6 @@
 # 
 #
 
-. /etc/board/private/bootenv-utility.sh
-
-
 if [ "$1" = "start" ]; then
 	echo "Starting special private..."
 

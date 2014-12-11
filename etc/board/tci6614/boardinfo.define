@@ -25,24 +25,33 @@ board_id_force_value=none
 #一般情况，请不要修改此板载信息定义表
 #表中各列之间使用空格作为分隔符
 #boardinfo definition table -- start; with a space as a delimiter
-board_id    cpu_id      project       cpu_name     host_name      network			  proc
-none		0           lte           tci6614      itl-bbu        network_bbu         proc_bbu
-none		3           lte           tci6614      itl-mesh       network_mesh        proc_none
+board_id    cpu_id      project       cpu_name     host_name      network	          proc           priv
+none		0           lte           tci6614      itl-bbu        network_bbu         proc_bbu       priv_bbu
+none		3           lte           tci6614      itl-mesh       network_mesh        proc_mesh      priv_mesh
 #boardinfo definition tabel -- end
 
 #proc_none：代表不产生/proc下相应目录与文件
-#proc中的条目为key=value格式  
-#每一个key代表/proc/$COMPANY/目录下的一个文件 value为该文件的值
-#注意：value的值里面不能含有空格  否则会造成错误！
-#      一般情况下，请不要修改
+#priv_none：代表不产生priv区段下相应文件
+#proc priv中的条目为key=value格式  
+#proc区段中每一个key代表/proc/$COMPANY/目录下的一个文件 value为该文件的值
+#注意：一般情况下，请不要修改
+#      
+#下面定义的区段 只是一个示例； 若需要在value中含有空格 则应该写成
+#file="have a good day"的格式
 proc_bbu={
 	board_type=itl-bbu
-	hardware=3
 }
 
 proc_mesh={
 	board_type=itl-mesh
-	hardware=3
+}
+
+priv_bbu={
+	author=itl-bsp
+}
+
+priv_mesh={
+	author=itl-bsp
 }
 
 #MAC地址:6个字节，分成两段，各三个字节

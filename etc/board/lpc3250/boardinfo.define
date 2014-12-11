@@ -33,9 +33,9 @@ none	    0           lte           lpc3250      itl-none-0     network_none_0   
 #boardinfo definition tabel -- end
 
 #proc_none：代表不产生/proc下相应目录与文件
-#priv：代表不产生priv区段下相应文件
+#priv_none：代表不产生priv区段下相应文件
 #proc priv中的条目为key=value格式  
-#每一个key代表/proc/$COMPANY/目录下的一个文件 value为该文件的值
+#proc区段中每一个key代表/proc/$COMPANY/目录下的一个文件 value为该文件的值
 #注意：一般情况下，请不要修改
 #      
 #下面定义的区段 只是一个示例； 若需要在value中含有空格 则应该写成
