@@ -41,16 +41,16 @@ none	    0           lte           lpc3250      itl-none-0     network_none_0   
 #下面定义的区段 只是一个示例； 若需要在value中含有空格 则应该写成
 #file="have a good day"的格式
 proc_rru={
-	author=itl-bsp
+	board_type=1000
 }
 
 proc_ccu={
-	author=itl-bsp
+	board_type=2000
 }
 
 priv_rru1={
 	ipaddr=192.192.192.232
-	board_addr=fcc8
+	board_addr=fcc6
 }
 
 priv_rru2={

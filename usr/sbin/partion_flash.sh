@@ -21,6 +21,11 @@ if [ ! -r $2 ]; then
 fi
 
 RECOVER_MTD_PART_NAME=$1
+if [ -z $KERNEL_PARTION_NAME ]; then
+	FLASH_KERNEL_PARTION_NAME=kernel
+else
+	FLASH_KERNEL_PARTION_NAME=$KERNEL_PARTION_NAME
+fi
 
 partion_find $RECOVER_MTD_PART_NAME
 
@@ -32,23 +37,24 @@ echo "flash_eraseall $PARTION_DEV_FILE"
 flash_eraseall $PARTION_DEV_FILE
 
 case "$RECOVER_MTD_PART_NAME" in
-	$KERNEL_PARTION_NAME)
+	"$FLASH_KERNEL_PARTION_NAME"|"$ROOTFS_PARTION_NAME")
 		echo "nandwrite -p $PARTION_DEV_FILE $2"
 		nandwrite -p $PARTION_DEV_FILE $2
 		;;
-	
+
 	*)
 		echo "flashcp -v $2 $PARTION_DEV_FILE"
 		flashcp -v $2 $PARTION_DEV_FILE
 		;;
 esac
 
-if [ $? -eq 0 ]; then
+RT=$?
+if [ $RT -eq 0 ]; then
 	echo "mtd partion<$RECOVER_MTD_PART_NAME> flash finish, you can press <reboot> to reboot now!"
 else
-	echo "flashcp failed! please check what happened!"
+	echo "flash write failed! please check what happened!"
 fi
 
-
+exit $RT
 
 

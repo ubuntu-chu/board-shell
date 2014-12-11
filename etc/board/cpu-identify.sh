@@ -324,6 +324,7 @@ cpu_identify_proc(){
 		echo "    $build_time" >> $BOARD_INFO_FILE
 	fi
 	#获取应用中定义的debug文件
+	echo -n "" > $SHELL_DEBUG_FILE
 	app_define_files_add "debug" "$SHELL_DEBUG_FILE" "$SHELL_DEBUG_FILE"
 
 	echo "}" >> $BOARD_INFO_FILE

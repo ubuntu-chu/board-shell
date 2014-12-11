@@ -78,14 +78,19 @@ fi
 
 killapp
 
+echo "rm -rf /etc/board"
+rm -rf /etc/board
 echo "tar $tar_opt $PACKAGE_FILE -C /"
 tar $tar_opt $PACKAGE_FILE -C /
 
 if [ $? -eq 0 ]; then
+	echo "run /etc/board/customize.sh"
+	/etc/board/customize.sh
+	echo "you can run /etc/board/validate-boardinfo.sh to view new boardinfo"
 	removepackage
-	echo "system update prepare success!"
+	echo "rootfs update success!"
 else
-	echo "system update prepare failed!"
+	echo "rootfs update failed!"
 fi
 
 
