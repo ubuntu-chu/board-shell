@@ -4,7 +4,7 @@
 # 
 #
 
-. /etc/board/bootenv-utility.sh
+. /etc/board/private/bootenv-utility.sh
 
 ubootenv_modify bootcmd "run normalboot"
 if [ $? -ne 0 ];then
