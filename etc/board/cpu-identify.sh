@@ -375,7 +375,7 @@ else
 	#从系统命令行中获取
 	proc_cmdline_value $BOARD_ID_KEY 
 	if [ $? -ne 0 ]; then
-		echo "$BOARD_ID_KEY do not exsit in $SYS_CMDLINE_FILE!"
+		echo "BOARD_ID_SOURCE = BOARD_ID_SOURCE_CMDLINE; but $BOARD_ID_KEY do not exsit in $SYS_CMDLINE_FILE or the value is none!"
 		exit 3
 	fi
 
@@ -484,7 +484,7 @@ else
 		#从系统命令行中获取
 		proc_cmdline_value $CPU_ID_KEY 
 		if [ $? -ne 0 ]; then
-			echo "$CPU_ID_KEY do not exsit in $SYS_CMDLINE_FILE!"
+			echo "CPU_ID_SOURCE = CPU_ID_SOURCE_CMDLINE; but $CPU_ID_KEY do not exsit in $SYS_CMDLINE_FILE or the value is none!"
 			exit 3
 		fi
 

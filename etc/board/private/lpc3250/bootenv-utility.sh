@@ -112,7 +112,7 @@ ubootenv_modify()
 		echo "recover $dump_name to boot env"
 		ubootenv_recover
 		if [ $? -ne 0 ]; then
-			echo "dump boot env failed!"
+			echo "recover boot env failed!"
 		fi
 		#更改失败
 		return 1
