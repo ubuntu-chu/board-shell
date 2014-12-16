@@ -32,6 +32,14 @@ none	    0           lte           lpc3250      itl-none-0     network_none_0   
 2           0           lte           lpc3250      itl-ccu        network_ccu         proc_ccu    priv_ccu
 #boardinfo definition tabel -- end
 
+#预先定义区段 
+#此部分的内容会被直接写入到文件中
+pre-define={
+	board_name=rfu_rru
+	board_type=1000
+	hardware=3
+}
+
 #proc_none：代表不产生/proc下相应目录与文件
 #priv_none：代表不产生priv区段下相应文件
 #proc priv中的条目为key=value格式  
@@ -41,11 +49,15 @@ none	    0           lte           lpc3250      itl-none-0     network_none_0   
 #下面定义的区段 只是一个示例； 若需要在value中含有空格 则应该写成
 #file="have a good day"的格式
 proc_rru={
-	board_type=1000
+	board_name=${board_name}
+	board_type=${board_type}
+	hardware=${hardware}
 }
 
 proc_ccu={
-	board_type=2000
+	board_name=${board_name}
+	board_type=${board_type}
+	hardware=${hardware}
 }
 
 priv_rru1={

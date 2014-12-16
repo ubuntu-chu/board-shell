@@ -72,6 +72,9 @@ partion_flash.sh $FLASH_MTD_PARTION_NAME $FLASH_FILE
 
 if [ $? -eq 0 ]; then
 	remove_flashfile
+else
+	FLASH_MTD_PARTION_NAME=ITL-kernel
+	partion_flash.sh $FLASH_MTD_PARTION_NAME $FLASH_FILE
 fi
 
 

@@ -36,6 +36,14 @@ if [ $# -eq 2 ]; then
 	PACKAGE_FILE=$2
 fi
 
+if [ -z $FLASH_DIR ]; then
+	FLASH_DIR=/var/flash
+fi
+
+if [ -z $APP_MOUNT_POINT ]; then
+	APP_MOUNT_POINT=/opt
+fi
+
 #check /opt 
 cat /proc/mounts|awk '{print $2}'|grep "$APP_MOUNT_POINT" > /dev/null
 if [ $? -ne 0 ]; then

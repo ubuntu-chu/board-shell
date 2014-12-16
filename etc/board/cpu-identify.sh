@@ -41,6 +41,8 @@ app_define_files_add()
 	do
 		#去除首部的空格  以及=号前后的空格
 		sed -i "s/^[[:space:]]*//;s/ *= */=/" $file
+		#将空格替换为_
+		sed -i "s/[[:space:]]/_/g" $file
 
 		while read line
 		do
@@ -102,9 +104,6 @@ cpu_identify_proc(){
 		echo "mapping table title cnts != value cnts"
 		return 2
 	fi
-
-	echo "************board info definition************" > $BOARD_INFO_FILE
-	echo "" >> $BOARD_INFO_FILE
 
 	echo "basic={" >> $BOARD_INFO_FILE
 	index=0
@@ -237,16 +236,21 @@ cpu_identify_proc(){
 		do
 			#去除首部的空格  以及=号前后的空格
 			sed -i "s/^[[:space:]]*//;s/ *= */=/" $file
+			#将空格替换为_
+			sed -i "s/[[:space:]]/_/g" $file
 
 			while read line
 			do
 				debug echo $line
+
 				if [ $first_add -eq 0 ]; then
-					proc_content=$line
+					#处理可能存在的变量引用
+					eval proc_content=$line
 					first_add=1
 				else
+					#处理可能存在的变量引用
 					#若proc_content中含有空格 则if [ -z $proc_content ]语句判断失效
-					proc_content="$proc_content":$line
+					eval proc_content="$proc_content":$line
 				fi
 				echo "    $line" >> $BOARD_INFO_FILE
 			done  < $file
@@ -339,6 +343,36 @@ if [ ! "$1" = "start" ]; then
 fi
 
 echo "Starting cpu identify..." 
+
+echo "************board info definition************" > $BOARD_INFO_FILE
+echo "" >> $BOARD_INFO_FILE
+
+proc_line_return $PREV_DEFINE_KEY $BOARD_INFO_SRC_FILE
+
+if [ $? -eq 0 ]; then
+
+	echo "$PREV_DEFINE_KEY={" >> $BOARD_INFO_FILE
+
+	echo -n "" > $SHELL_PREV_DEFINE_SYS_FILE
+	section_content_get $PREV_DEFINE_KEY $BOARD_INFO_SRC_FILE $SHELL_PREV_DEFINE_SYS_FILE
+
+	for file in $SHELL_PREV_DEFINE_SYS_FILE
+	do
+		#去除首部的空格  以及=号前后的空格
+		sed -i "s/^[[:space:]]*//;s/ *= */=/" $file
+		#将空格替换为_
+		sed -i "s/[[:space:]]/_/g" $file
+
+		while read line
+		do
+			debug echo $line
+			#依据获取到的key=value键值对  生成一个本地变量  以便后面对其进行引用
+			eval $line
+			echo "    $line" >> $BOARD_INFO_FILE
+		done  < $file
+	done
+	echo "}" >> $BOARD_INFO_FILE
+fi
 
 #获取board_id
 #调用脚本挂载app分区

@@ -48,7 +48,11 @@ remove_flashfile()
 DEF_FLASH_FILE=itl-app.img
 FLASH_FILE=$DEF_FLASH_FILE
 DEL_FLASH_FILE=1
-FLASH_MTD_PARTION_NAME=$APP_PARTION_NAME
+if [ -z $APP_MOUNT_POINT ]; then
+	FLASH_MTD_PARTION_NAME=app
+else
+	FLASH_MTD_PARTION_NAME=$APP_PARTION_NAME
+fi
 
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	help

@@ -52,6 +52,7 @@ ETC_APP_ENTRY_SHELL=app-entry.sh
 
 #通讯用文件
 SHELL_COMM_FILE=/var/run/sys-regs
+SHELL_PREV_DEFINE_SYS_FILE=/var/run/sys-pre-define-file
 SHELL_PROC_FILE=/var/run/app-proc-file
 SHELL_PROC_SYS_FILE=/var/run/sys-proc-file
 SHELL_PRIV_FILE=/var/run/app-priv-file
@@ -62,6 +63,7 @@ SHELL_PRIV_SYS_FILE=/var/run/sys-priv-file
 #boardinfo file
 BOARD_INFO_SRC_FILE="/etc/board/boardinfo.define"
 export BOARD_INFO_FILE="/var/run/boardinfo"
+PREV_DEFINE_KEY="pre-define"
 PROJECT_KEY="project"
 BOARD_TYPE_KEY="board_type"
 CPU_ID_KEY="cpu_id"
