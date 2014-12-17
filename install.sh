@@ -1,6 +1,7 @@
 #!/bin/sh
 
 ETC_BOARD_SUFFIX="etc/board"
+ETC_RCD_SUFFIX="etc/rc.d"
 USR_SBIN_SUFFIX="usr/sbin"
 USR_SHARE_SUFFIX="usr/share"
 BIN_SUFFIX="bin"
@@ -9,6 +10,7 @@ PRIVATE_SUFFIX="private"
 
 rootfs_common_path="/home/chum/work/lte/rootfs-common"
 ETC_BOARD_SRC_PATH="$rootfs_common_path/$ETC_BOARD_SUFFIX/"
+ETC_RCD_SRC_PATH="$rootfs_common_path/$ETC_RCD_SUFFIX/"
 ETC_BOARD_PRIVATE_SRC_PATH="$rootfs_common_path/$ETC_BOARD_SUFFIX/$PRIVATE_SUFFIX"
 USR_SBIN_SRC_PATH="$rootfs_common_path/$USR_SBIN_SUFFIX/"
 USR_SHARE_SRC_PATH="$rootfs_common_path/$USR_SHARE_SUFFIX/"
@@ -89,12 +91,17 @@ mkdir -p $rootfs_update_path_usr_share/file
 mkdir -p $rootfs_update_path_usr_share/misc
 mkdir -p $rootfs_update_path_usr_share/file/maigc
 
+mkdir -p $rootfs_update_path/$ETC_RCD_SUFFIX
+
 install_files $ETC_BOARD_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_etc_board
 install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_etc_board_private
 install_files $USR_SBIN_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_usr_sbin
 install_files $BIN_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_bin
 install_files $SBIN_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_sbin
 install_usr_share $USR_SHARE_SRC_PATH $rootfs_update_path_usr_share
+
+cp $rootfs_common_path/etc/$cpu_name_lpc3250/profile $rootfs_update_path/etc/
+cp $rootfs_common_path/etc/$cpu_name_lpc3250/rc.d/rcS $rootfs_update_path/$ETC_RCD_SUFFIX
 
 
 #rm -rf $LPC3250_ETC_BOARD_DEST_PATH/*

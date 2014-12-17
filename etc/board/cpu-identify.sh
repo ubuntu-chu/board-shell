@@ -14,15 +14,11 @@ SYS_CLASS_GPIO_FILE_ARRAY=()
 BOARD_ID=$BOARD_ID_NONE_TEXT
 SYS_REGS_EXIST=0
 
-section_content_get()
+file_lines_proc()
 {
-	#awk '/^'${1}'=\{/,/^\}/ {print $0}' "${2}"\
-	#	| sed '1d;$d;s/^[[:space:]]*//' | sed 's/ *= \+\(\w\)/=\1/'\
-	#	| awk '{print $0 >> "'"${3}"'"}'
-	#去除=号左右的空格
-	awk '/^'${1}'=\{/,/^\}/ {print $0}' "${2}"\
-		| sed '1d;$d' | sed "s/^[[:space:]]*//" | sed "s/ *= */=/"\
-		| awk '{print $0 >> "'"${3}"'"}'
+	#去除首部 尾部的空格  以及=号前后的空格
+	#将空格替换为_
+	sed -i "s/^[[:space:]]*//;s/ *= */=/;s/[[:space:]]*$//;s/[[:space:]]/_/g" $1
 }
 
 app_define_files_add()
@@ -39,10 +35,7 @@ app_define_files_add()
 
 	for file in $@
 	do
-		#去除首部的空格  以及=号前后的空格
-		sed -i "s/^[[:space:]]*//;s/ *= */=/" $file
-		#将空格替换为_
-		sed -i "s/[[:space:]]/_/g" $file
+		file_lines_proc $file
 
 		while read line
 		do
@@ -234,25 +227,23 @@ cpu_identify_proc(){
 		first_add=0
 		for file in $SHELL_PROC_SYS_FILE $SHELL_PROC_FILE
 		do
-			#去除首部的空格  以及=号前后的空格
-			sed -i "s/^[[:space:]]*//;s/ *= */=/" $file
-			#将空格替换为_
-			sed -i "s/[[:space:]]/_/g" $file
+			file_lines_proc $file
 
 			while read line
 			do
 				debug echo $line
 
+				eval line_content=$line
 				if [ $first_add -eq 0 ]; then
 					#处理可能存在的变量引用
-					eval proc_content=$line
+					proc_content=$line_content
 					first_add=1
 				else
 					#处理可能存在的变量引用
 					#若proc_content中含有空格 则if [ -z $proc_content ]语句判断失效
-					eval proc_content="$proc_content":$line
+					proc_content="$proc_content":$line_content
 				fi
-				echo "    $line" >> $BOARD_INFO_FILE
+				echo "    $line_content" >> $BOARD_INFO_FILE
 			done  < $file
 		done
 		debug echo "proc_content=$proc_content"
@@ -358,10 +349,7 @@ if [ $? -eq 0 ]; then
 
 	for file in $SHELL_PREV_DEFINE_SYS_FILE
 	do
-		#去除首部的空格  以及=号前后的空格
-		sed -i "s/^[[:space:]]*//;s/ *= */=/" $file
-		#将空格替换为_
-		sed -i "s/[[:space:]]/_/g" $file
+		file_lines_proc $file
 
 		while read line
 		do

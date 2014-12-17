@@ -6,7 +6,7 @@
 . /etc/board/rcS.define
 
 #下面的配置为通用配置部分   注意要求应用程序的文件夹架构必须一致！
-VERSION="v1.0.1"
+VERSION="v1.0.2"
 
 #默认PATH文件定义
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:$ETC_ENTRY_SHELL_PATH:/etc/board
@@ -185,5 +185,16 @@ proc_cmdline_value()
 debug(){
 		[ $DEBUG = 1  ] && $@
 
+}
+
+section_content_get()
+{
+	#awk '/^'${1}'=\{/,/^\}/ {print $0}' "${2}"\
+	#	| sed '1d;$d;s/^[[:space:]]*//' | sed 's/ *= \+\(\w\)/=\1/'\
+	#	| awk '{print $0 >> "'"${3}"'"}'
+	#去除=号左右的空格
+	awk '/^'${1}'=\{/,/^\}/ {print $0}' "${2}"\
+		| sed '1d;$d' | sed "s/^[[:space:]]*//" | sed "s/ *= */=/"\
+		| awk '{print $0 >> "'"${3}"'"}'
 }
 

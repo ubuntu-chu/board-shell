@@ -33,7 +33,8 @@ none	    0           lte           lpc3250      itl-none-0     network_none_0   
 #boardinfo definition tabel -- end
 
 #预先定义区段 
-#此部分的内容会被直接写入到文件中
+#此部分的内容会被直接写入到板载信息文件中
+#下面定义的区段 请不要更改！
 pre-define={
 	board_name=rfu_rru
 	board_type=1000
@@ -46,8 +47,8 @@ pre-define={
 #proc区段中每一个key代表/proc/$COMPANY/目录下的一个文件 value为该文件的值
 #注意：一般情况下，请不要修改
 #      
-#下面定义的区段 只是一个示例； 若需要在value中含有空格 则应该写成
-#file="have a good day"的格式
+#若value的内容中含有空格 则空格会被替换为_
+#下面定义的区段 请不要更改！
 proc_rru={
 	board_name=${board_name}
 	board_type=${board_type}

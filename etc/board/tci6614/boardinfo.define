@@ -36,14 +36,13 @@ none		3           lte           tci6614      itl-mesh       network_mesh        
 #proc区段中每一个key代表/proc/$COMPANY/目录下的一个文件 value为该文件的值
 #注意：一般情况下，请不要修改
 #      
-#下面定义的区段 只是一个示例； 若需要在value中含有空格 则应该写成
-#file="have a good day"的格式
+#若value的内容中含有空格 则空格会被替换为_
 proc_bbu={
-	board_type=itl-bbu
+	board_name=itl-bbu
 }
 
 proc_mesh={
-	board_type=itl-mesh
+	board_name=itl-mesh
 }
 
 priv_bbu={

@@ -57,3 +57,11 @@ ROOTFS_MOUNT_NAME_RECOVERY="rootfs-recover"
 #内核中rootfs分区名称
 ROOTFS_PARTION_NAME_KERNEL="rootfs"
 
+#支持的板型列表
+BOARD_NAME_RFU_RRU="rfu_rru"
+BOARD_NAME_CS_RFU_RRU="cs_rfu_rru"
+BOARD_NAME_SS_RFU_RRU="ss_rfu_rru"
+BOARD_NAME_IFU_CCU="ifu_ccu"
+BOARD_NAME_RS_CCU="rs_ccu"
+
+
