@@ -8,31 +8,7 @@ help(){
 }
 
 killapp(){
-	which stop_bbu > /dev/null
-	if [ $? -eq 0 ]; then
-		stop_bbu
-		sleep 1
-	fi
-
-	pid_list=`pidof thttpd`
-	if [ $? -eq 0 ]; then
-		for i in $pid_list; do
-			echo "pid = $i"
-			if [ -d /proc/$i ]; then
-				kill -9 $i
-			fi
-		done
-	fi
-
-	pid_list=`pidof tail`
-	if [ $? -eq 0 ]; then
-		for i in $pid_list; do
-			echo "pid = $i"
-			if [ -d /proc/$i ]; then
-				kill -9 $i
-			fi
-		done
-	fi
+	vendor-sys-proc stop
 
 	sleep 2
 }

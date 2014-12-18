@@ -8,9 +8,7 @@ help(){
 }
 
 killapp(){
-	if [ -x vendor-sys-proc ]; then
-		vendor-sys-proc stop
-	fi
+	vendor-sys-proc stop
 
 	sleep 2
 }

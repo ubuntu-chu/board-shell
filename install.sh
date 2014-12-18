@@ -112,15 +112,15 @@ install_files $USR_SBIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_USR_SBIN_DEST_PATH
 install_files $BIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_BIN_DEST_PATH
 install_files $SBIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_SBIN_DEST_PATH
 install_usr_share $USR_SHARE_SRC_PATH $LPC3250_USR_SHARE_DEST_PATH
-#
-#rm -rf $TCI6614_ETC_BOARD_DEST_PATH/*
-#mkdir -p $TCI6614_ETC_BOARD_PRIVATE_DEST_PATH
-#install_files $ETC_BOARD_SRC_PATH $cpu_name_tci6614 $TCI6614_ETC_BOARD_DEST_PATH
-#install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_tci6614 $TCI6614_ETC_BOARD_PRIVATE_DEST_PATH
-#install_files $USR_SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_USR_SBIN_DEST_PATH
-##install_files $BIN_SRC_PATH $cpu_name_tci6614 $TCI6614_BIN_DEST_PATH
-##install_link $SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_SBIN_DEST_PATH
-#install_usr_share $USR_SHARE_SRC_PATH $TCI6614_USR_SHARE_DEST_PATH
+
+rm -rf $TCI6614_ETC_BOARD_DEST_PATH/*
+mkdir -p $TCI6614_ETC_BOARD_PRIVATE_DEST_PATH
+install_files $ETC_BOARD_SRC_PATH $cpu_name_tci6614 $TCI6614_ETC_BOARD_DEST_PATH
+install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_tci6614 $TCI6614_ETC_BOARD_PRIVATE_DEST_PATH
+install_files $USR_SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_USR_SBIN_DEST_PATH
+#install_files $BIN_SRC_PATH $cpu_name_tci6614 $TCI6614_BIN_DEST_PATH
+#install_link $SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_SBIN_DEST_PATH
+install_usr_share $USR_SHARE_SRC_PATH $TCI6614_USR_SHARE_DEST_PATH
 
 cd $rootfs_update_path
 tar zcf $rootfs_update_tar_name ./*
