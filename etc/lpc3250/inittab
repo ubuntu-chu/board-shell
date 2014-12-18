@@ -1,0 +1,15 @@
+# /etc/inittab: init(8) configuration.
+# $Id: inittab,v 1.91 2002/01/25 13:35:21 miquels Exp $
+
+# Boot-time system configuration/initialization script.
+# This is run first except when booting in emergency (-b) mode.
+::sysinit:/etc/rc.d/rcS
+
+::respawn:-/bin/sh
+#::respawn:-/bin/login
+#::askfirst:-/bin/login
+
+::ctrlaltdel:/sbin/reboot
+::shutdown:/etc/rc.d/rcS stop
+::restart:/sbin/init
+

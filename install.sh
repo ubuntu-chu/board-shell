@@ -101,6 +101,8 @@ install_files $SBIN_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_sbin
 install_usr_share $USR_SHARE_SRC_PATH $rootfs_update_path_usr_share
 
 cp $rootfs_common_path/etc/$cpu_name_lpc3250/profile $rootfs_update_path/etc/
+cp $rootfs_common_path/etc/$cpu_name_lpc3250/inittab $rootfs_update_path/etc/
+cp $rootfs_common_path/etc/$cpu_name_lpc3250/fstab $rootfs_update_path/etc/
 cp $rootfs_common_path/etc/$cpu_name_lpc3250/rc.d/rcS $rootfs_update_path/$ETC_RCD_SUFFIX
 
 

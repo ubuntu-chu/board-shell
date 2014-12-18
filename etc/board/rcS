@@ -78,6 +78,7 @@ CPU_NAME_KEY="cpu_name"
 
 #board_id为空时对应的boardinfo table中文本
 BOARD_ID_NONE_TEXT=none
+CPU_ID_NONE_TEXT=none
 
 #network interfaces file
 INTERFACES_SRC_FILE=$BOARD_INFO_FILE

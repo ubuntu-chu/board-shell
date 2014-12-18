@@ -72,7 +72,7 @@ cpu_identify_proc(){
 	item=`awk '{if ($1 == "'"${BOARD_ID_KEY}"'" && $2 == "'"${CPU_ID_KEY}"'"){print $0}}' $BOARD_INFO_SRC_FILE`
 	if [ -z "$item" ]; then
 		echo "$BOARD_INFO_SRC_FILE boardinfo definition table has no title line: ${BOARD_ID_KEY} ${CPU_ID_KEY}!"
-		return 1
+		return 2
 	fi
 
 	index=0
@@ -95,7 +95,7 @@ cpu_identify_proc(){
 	if [ ${#value_array[*]} -ne ${#item_array[*]} ]; then
 		echo "$BOARD_INFO_SRC_FILE format error!"
 		echo "mapping table title cnts != value cnts"
-		return 2
+		return 3
 	fi
 
 	echo "basic={" >> $BOARD_INFO_FILE
@@ -154,13 +154,13 @@ cpu_identify_proc(){
 	fi
 	
 	#获取mac_board_id
-	if [ ${1} = "none" ]; then
+	if [ ${1} = $BOARD_ID_NONE_TEXT ]; then
 		mac_board_id=ff
 	else
 		mac_board_id=`printf "%02x" ${1}`
 	fi
 	#获取mac_cpu_id
-	if [ ${2} = "none" ]; then
+	if [ ${2} = $CPU_ID_NONE_TEXT ]; then
 		mac_cpu_id=0f
 	else
 		mac_cpu_id=`printf "%02x" ${2}`
@@ -517,10 +517,29 @@ fi
 debug echo "board_id = $BOARD_ID"
 debug echo "cpu_id = $CPU_ID"
 
-#调用cpu_identify_proc处理
-cpu_identify_proc $BOARD_ID $CPU_ID
+RT=0
 
-if [ $? -ne 0 ]; then
+while true
+do
+	#调用cpu_identify_proc处理
+	cpu_identify_proc $BOARD_ID $CPU_ID
+	RT=$?
+	if [ $RT -eq 0 ]; then
+		break
+	fi
+	if [ $RT -eq 1 ]; then
+		if [ $BOARD_ID = $BOARD_ID_NONE_TEXT ]; then
+			break
+		else
+			echo "force board id = $BOARD_ID_NONE_TEXT  and try again"
+			BOARD_ID=$BOARD_ID_NONE_TEXT
+		fi
+	else
+		break
+	fi
+done
+
+if [ $RT -ne 0 ]; then
 	echo "***************cpu identify failed! please check the configuration!***************"
 fi
 		

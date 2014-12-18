@@ -1,0 +1,42 @@
+#支持的板型列表
+board_name_1="rfu_rru"
+board_name_2="cs_rfu_rru"
+board_name_3="ss_rfu_rru"
+board_name_4="ifu_ccu"
+board_name_5="rs_ccu"
+
+board_name_array=($board_name_1 $board_name_2 $board_name_3 $board_name_4 $board_name_5)
+default_board_type=
+default_hardware_list=()
+
+boarddefine_get()
+{
+	case $1 in
+		$board_name_1 )
+			default_board_type=1000
+			default_hardware_list=(3)
+			;;
+		$board_name_2 )
+			default_board_type=1100
+			default_hardware_list=(1)
+			;;
+		$board_name_3 )
+			default_board_type=1200
+			default_hardware_list=(1)
+			;;
+		$board_name_4 )
+			default_board_type=2000
+			default_hardware_list=(1)
+			;;
+		$board_name_5 )
+			default_board_type=2100
+			default_hardware_list=(1)
+			;;
+		*)
+			echo "invalid board name: $1"
+			exit 1
+			;;
+	esac
+}
+
+
