@@ -2,7 +2,8 @@
 
 . /etc/board/rcS
 
-board_name_array=($BOARD_NAME_RFU_RRU $BOARD_NAME_CS_RFU_RRU $BOARD_NAME_SS_RFU_RRU $BOARD_NAME_IFU_CCU $BOARD_NAME_RS_CCU)
+#支持的板型列表
+board_name_array=(rfu_rru cs_rfu_rru ss_rfu_rru ifu_ccu rs_ccu)
 board_type_array=(1000 1001 1002 2000 2001)
 init_hardware_array=(3 1 1 1 1)
 
