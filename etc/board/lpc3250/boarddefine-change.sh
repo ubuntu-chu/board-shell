@@ -1,7 +1,11 @@
 #!/bin/bash
 
-. /etc/board/rcS
-. /etc/board/rcS.board
+if [ -x /etc/board/rcS ]; then
+	. /etc/board/rcS
+fi
+if [ -x /etc/board/rcS.board ]; then
+	. /etc/board/rcS.board
+fi
 
 new_board_name=
 new_board_type=
@@ -139,9 +143,16 @@ echo "new hardware: $new_hardware"
 
 echo "------------write back new board define------------"
 
+if [ $# -eq 3 ]; then
+	DEST_BOARD_INFO_FILE=$3
+else
+	DEST_BOARD_INFO_FILE=$BOARD_INFO_SRC_FILE
+fi
+
+
 sed -i "/^"${PREV_DEFINE_KEY}"={/,/^\}/ s/board_name=.*/board_name="${new_board_name}"/\
-	;s/board_type=.*/board_type="${new_board_type}"/\
-	;s/hardware=.*/hardware="${new_hardware}"/" $BOARD_INFO_SRC_FILE
+	;/^"${PREV_DEFINE_KEY}"={/,/^\}/ s/board_type=.*/board_type="${new_board_type}"/\
+	;/^"${PREV_DEFINE_KEY}"={/,/^\}/ s/hardware=.*/hardware="${new_hardware}"/" $DEST_BOARD_INFO_FILE
 
 
 #index=0

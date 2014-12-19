@@ -19,10 +19,10 @@ DEF_FLASH_FILE=itl-rootfs.img
 FLASH_FILE=$DEF_FLASH_FILE
 DEL_FLASH_FILE=1
 #分区在内核中的名字 用于删除 烧写分区
-FLASH_PARTION_NAME=$ROOTFS_PARTION_NAME
+FLASH_PARTION_NAME="rootfs-recover"
 #分区挂载的名字 用于判断分区是否已经挂载    
 #大部分情况下两个名字相同 若使用ubi文件系统 则两者不同
-FLASH_PARTION_MOUNT_NAME=$ROOTFS_MOUNT_NAME
+FLASH_PARTION_MOUNT_NAME=$FLASH_PARTION_NAME
 
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	help

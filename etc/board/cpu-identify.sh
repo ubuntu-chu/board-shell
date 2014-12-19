@@ -161,9 +161,13 @@ cpu_identify_proc(){
 	fi
 	#获取mac_cpu_id
 	if [ ${2} = $CPU_ID_NONE_TEXT ]; then
-		mac_cpu_id=0f
+		#这里等于00的原因在于 若值等于0f  则会发生
+		#mac_lowest=0+0f: value too great for base (error token is "0f") 的错误
+		mac_cpu_id="0f"
+		mac_cpu_id_calc="00"
 	else
 		mac_cpu_id=`printf "%02x" ${2}`
+		mac_cpu_id_calc=$mac_cpu_id
 	fi
 	#获取匹配的行号
 	replace_nu_list=`egrep "${MAC_HWADDRESS_KEY} +${MAC_VALUE_KEY}*" -n ${BOARD_INFO_FILE}|cut -d ':' -f 0`
@@ -171,8 +175,11 @@ cpu_identify_proc(){
 	mac_nic=0
 	for i in $replace_nu_list;
 	do 
-		mac_lowest=$(($mac_nic+$mac_cpu_id))
-		#let "mac_cpu_id=$mac_cpu_id_high+$mac_cpu_id_low"
+		mac_lowest=$(($mac_nic+$mac_cpu_id_calc))
+		#let "mac_lowest=$mac_nic+$mac_cpu_id_calc"
+		if [ ${2} = $CPU_ID_NONE_TEXT ]; then
+			let "mac_lowest=$mac_lowest | 0x0f"
+		fi
 		mac_lowest=`printf "%02x" ${mac_lowest}`
 		#sed -ie ''${i}'s/'${MAC_HWADDRESS_KEY}' \+'${MAC_VALUE_KEY}'.*/'${MAC_HWADDRESS_KEY}' '${mac_oui}':'${mac_batch_seq}':'${mac_board_id}':'${mac_lowest}'/g' ${BOARD_INFO_FILE}
 		sed -ie "${i}s/${MAC_HWADDRESS_KEY} \+${MAC_VALUE_KEY}.*/${MAC_HWADDRESS_KEY} ${mac_oui}:${mac_batch_seq}:${mac_board_id}:${mac_lowest}/g" ${BOARD_INFO_FILE}
@@ -324,7 +331,6 @@ cpu_identify_proc(){
 
 	echo "}" >> $BOARD_INFO_FILE
 	
-	echo "" >> $BOARD_INFO_FILE
 
 	return 0
 }
@@ -518,10 +524,11 @@ debug echo "board_id = $BOARD_ID"
 debug echo "cpu_id = $CPU_ID"
 
 RT=0
-BOARD_ID_CHANGE=0
-CPU_ID_CHANGE=0
+BOARD_OR_CPU_ID_CHANGE=0
 BOARD_ID_ORIGINAL=$BOARD_ID
 CPU_ID_ORIGINAL=$CPU_ID
+
+echo -n "" > $SHELL_ERROR_SYS_FILE
 
 while true
 do
@@ -534,31 +541,39 @@ do
 	#仅仅处理board_id cpu_id的值与映射表中不匹配的情况
 	if [ $RT -eq 1 ]; then
 		if [ $BOARD_ID = $BOARD_ID_NONE_TEXT -a $CPU_ID = $CPU_ID_NONE_TEXT ]; then
-			echo "${ERROR_KEY}={" >> $BOARD_INFO_FILE
-			if [ $BOARD_ID_CHANGE -ne 0 ]; then
-				echo "board_id_original_value=$BOARD_ID_ORIGINAL;board_id_assign_value=$BOARD_ID"
-			fi
-			if [ $CPU_ID_CHANGE -ne 0 ]; then
-				echo "cpu_id_original_value=$CPU_ID_ORIGINAL;cpu_id_assign_value=$CPU_ID"
-			fi
-			echo "}" >> $BOARD_INFO_FILE
+			#此时代表映射表中没有board_id=none  cpu_id=none这一行 出错
 			break
 		else
+			BOARD_OR_CPU_ID_CHANGE=1
 			if [ ! $BOARD_ID = $BOARD_ID_NONE_TEXT ]; then
-				BOARD_ID_CHANGE=1
-				echo "assign board id = $BOARD_ID_NONE_TEXT and try again"
 				BOARD_ID=$BOARD_ID_NONE_TEXT
+				echo "assign board id = $BOARD_ID and try again"
+				echo "board_id_original_value=$BOARD_ID_ORIGINAL;board_id_assign_value=$BOARD_ID" >> $SHELL_ERROR_SYS_FILE
+				continue
 			fi
 			if [ ! $CPU_ID = $CPU_ID_NONE_TEXT ]; then
-				CPU_ID_CHANGE=1
-				echo "assign cpu id = $CPU_ID_NONE_TEXT and try again"
 				CPU_ID=$CPU_ID_NONE_TEXT
+				echo "assign cpu id = $CPU_ID and try again"
+				echo "cpu_id_original_value=$CPU_ID_ORIGINAL;cpu_id_assign_value=$CPU_ID" >> $SHELL_ERROR_SYS_FILE
+				continue
 			fi
 		fi
 	else
 		break
 	fi
 done
+
+if [ $BOARD_OR_CPU_ID_CHANGE -ne 0 ]; then
+	echo "${ERROR_KEY}={" >> $BOARD_INFO_FILE
+	while read line
+	do
+		debug echo $line
+		echo "    $line" >> $BOARD_INFO_FILE
+	done  < $SHELL_ERROR_SYS_FILE
+	echo "}" >> $BOARD_INFO_FILE
+fi
+
+echo "" >> $BOARD_INFO_FILE
 
 if [ $RT -ne 0 ]; then
 	echo "***************cpu identify failed! please check the configuration!***************"
