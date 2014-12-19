@@ -74,6 +74,7 @@ PROC_KEY="proc"
 PROC_NONE_VALUE="proc_none"
 PRIV_KEY="priv"
 PRIV_NONE_VALUE="priv_none"
+ERROR_KEY="error"
 CPU_NAME_KEY="cpu_name"
 
 #board_id为空时对应的boardinfo table中文本

@@ -26,6 +26,7 @@ board_id_force_value=none
 #表中各列之间使用空格作为分隔符
 #boardinfo definition table -- start; with a space as a delimiter
 board_id    cpu_id      project       cpu_name     host_name      network	          proc           priv
+none		none        lte           tci6614      itl-dsp-none   network_none_none   proc_none      priv_none
 none		0           lte           tci6614      itl-bbu        network_bbu         proc_bbu       priv_bbu
 none		3           lte           tci6614      itl-mesh       network_mesh        proc_mesh      priv_mesh
 #boardinfo definition tabel -- end
@@ -111,4 +112,27 @@ network_mesh={
 	gateway 172.30.0.1
 }
 
+#请不要修改 hwaddress这一行!
+network_none_none={
+	# The loopback interface
+	auto lo
+	iface lo inet loopback
+
+	# The eth0 interface
+	auto eth0
+	iface eth0 inet static
+	address 192.192.192.40
+	netmask 255.255.255.0
+	network 192.192.192.0
+	gateway 192.192.192.201
+	hwaddress ether XX:XX:XX:XX:XX:XX
+
+	# The eth1 interface
+	auto eth1
+	iface eth1 inet static
+	address 172.30.0.40
+	netmask 255.255.0.0
+	network 172.30.0.0
+	gateway 172.30.0.1
+}
 

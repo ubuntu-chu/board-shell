@@ -518,6 +518,10 @@ debug echo "board_id = $BOARD_ID"
 debug echo "cpu_id = $CPU_ID"
 
 RT=0
+BOARD_ID_CHANGE=0
+CPU_ID_CHANGE=0
+BOARD_ID_ORIGINAL=$BOARD_ID
+CPU_ID_ORIGINAL=$CPU_ID
 
 while true
 do
@@ -527,12 +531,29 @@ do
 	if [ $RT -eq 0 ]; then
 		break
 	fi
+	#仅仅处理board_id cpu_id的值与映射表中不匹配的情况
 	if [ $RT -eq 1 ]; then
-		if [ $BOARD_ID = $BOARD_ID_NONE_TEXT ]; then
+		if [ $BOARD_ID = $BOARD_ID_NONE_TEXT -a $CPU_ID = $CPU_ID_NONE_TEXT ]; then
+			echo "${ERROR_KEY}={" >> $BOARD_INFO_FILE
+			if [ $BOARD_ID_CHANGE -ne 0 ]; then
+				echo "board_id_original_value=$BOARD_ID_ORIGINAL;board_id_assign_value=$BOARD_ID"
+			fi
+			if [ $CPU_ID_CHANGE -ne 0 ]; then
+				echo "cpu_id_original_value=$CPU_ID_ORIGINAL;cpu_id_assign_value=$CPU_ID"
+			fi
+			echo "}" >> $BOARD_INFO_FILE
 			break
 		else
-			echo "force board id = $BOARD_ID_NONE_TEXT  and try again"
-			BOARD_ID=$BOARD_ID_NONE_TEXT
+			if [ ! $BOARD_ID = $BOARD_ID_NONE_TEXT ]; then
+				BOARD_ID_CHANGE=1
+				echo "assign board id = $BOARD_ID_NONE_TEXT and try again"
+				BOARD_ID=$BOARD_ID_NONE_TEXT
+			fi
+			if [ ! $CPU_ID = $CPU_ID_NONE_TEXT ]; then
+				CPU_ID_CHANGE=1
+				echo "assign cpu id = $CPU_ID_NONE_TEXT and try again"
+				CPU_ID=$CPU_ID_NONE_TEXT
+			fi
 		fi
 	else
 		break

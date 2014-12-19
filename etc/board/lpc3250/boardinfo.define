@@ -27,6 +27,7 @@ board_id_force_value=
 #boardinfo definition table -- start; with a space as a delimiter
 board_id    cpu_id      project       cpu_name     host_name      network	      proc           priv
 none	    0           lte           lpc3250      itl-none-0     network_none_0      proc_rru    priv_rru1
+none	    none        lte           lpc3250      itl-none-none  network_none_none   proc_rru    priv_rru1
 0           0           lte           lpc3250      itl-rru1       network_rru1         proc_rru   priv_rru1
 1	    0           lte           lpc3250      itl-rru2       network_rru2        proc_rru         priv_rru2    
 2           0           lte           lpc3250      itl-ccu        network_ccu         proc_ccu    priv_ccu
@@ -136,6 +137,22 @@ network_ccu={
 
 #请不要修改 hwaddress这一行!
 network_none_0={
+	# The loopback interface
+	auto lo
+	iface lo inet loopback
+
+	# The eth0 interface
+	auto eth0
+	iface eth0 inet static
+	address 192.192.192.30
+	netmask 255.255.255.0
+	network 192.192.192.0
+	gateway 192.192.192.201
+	hwaddress XX:XX:XX:XX:XX:XX
+}
+
+#请不要修改 hwaddress这一行!
+network_none_none={
 	# The loopback interface
 	auto lo
 	iface lo inet loopback
