@@ -41,6 +41,7 @@ APP_REPOSITORY_ROOTFS_DIR=application/lpc3250_rootfs
 CCU_BIN_SRC_PATH=$APP_REPOSITORY_ROOTFS_DIR/$BIN_PATH/CCU
 CCU_ETC_SRC_PATH=$APP_REPOSITORY_ROOTFS_DIR/$ETC_PATH/CCU
 RRU_BIN_SRC_PATH=$APP_REPOSITORY_ROOTFS_DIR/$BIN_PATH/RRU
+RRU_ETC_SRC_PATH=$APP_REPOSITORY_ROOTFS_DIR/$ETC_PATH/RRU
 LIB_SRC_PATH=$APP_REPOSITORY_ROOTFS_DIR/$LIB_PATH/
 
 DEBUG=0
@@ -204,6 +205,9 @@ build_rru()
 	echo "cp -ar $LIB_SRC_PATH/* $APP_DIR/$LIB_PATH/"
 	[ $DEBUG -eq 0 ] && cp -ar $LIB_SRC_PATH/* $APP_DIR/$LIB_PATH/
 
+	echo "cp -ar $RRU_ETC_SRC_PATH/* $APP_DIR/$ETC_PATH/"
+	[ $DEBUG -eq 0 ] && cp -ar $RRU_ETC_SRC_PATH/* $APP_DIR/$ETC_PATH/
+
 	echo "rm -rf $APP_DIR/$BIN_PATH/*"
 	[ $DEBUG -eq 0 ] && rm -rf $APP_DIR/$BIN_PATH/*
 
@@ -230,8 +234,21 @@ case "$1" in
 		;;
 
 	$MAKE_KEY)
-		#(cd $APP_REPOSITORY_DIR && echo "make && make install && exit" | sb2 )
-		(cd $APP_REPOSITORY_DIR && echo "make clean && make && make install && exit" | sb2 )
+		(cd $APP_REPOSITORY_DIR && svn up && echo "make clean && make 2>make.log && make install 2>make_install.log && exit" | sb2)
+		#(cd $APP_REPOSITORY_DIR && svn up && echo "make 2>make.log && make install 2>make_install.log && exit" | sb2)
+
+		echo ""
+		echo ""
+		echo ""
+
+		egrep -C3 "错误|error|svn" $APP_REPOSITORY_DIR/make.log 
+		if [ $? -eq 0 ]; then
+			echo "make report error!"
+		fi
+		egrep -C3 "错误|error|svn" $APP_REPOSITORY_DIR/make_install.log 
+		if [ $? -eq 0 ]; then
+			echo "make install report error!"
+		fi
 		;;
 
 	$FPGA_KEY)
