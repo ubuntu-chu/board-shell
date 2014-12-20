@@ -124,6 +124,15 @@ install_files $USR_SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_USR_SBIN_DEST_PATH
 #install_link $SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_SBIN_DEST_PATH
 install_usr_share $USR_SHARE_SRC_PATH $TCI6614_USR_SHARE_DEST_PATH
 
+
+#更新build_time
+boardinfo_define_file="boardinfo.define"
+BUILD_TIME_KEY="rootfs_img_build_time="
+BUILD_TIME=`date +"%F %T"`
+echo "$SUDO_PASSWD" | sudo -S sed -i -e "s/^$BUILD_TIME_KEY.*$/$BUILD_TIME_KEY$BUILD_TIME/g" $rootfs_update_path_etc_board/$boardinfo_define_file
+#更新根文件系统中的文件
+cp $rootfs_update_path_etc_board/$boardinfo_define_file $LPC3250_ETC_BOARD_DEST_PATH/$boardinfo_define_file
+
 cd $rootfs_update_path
 tar zcf $rootfs_update_tar_name ./*
 cd ..
