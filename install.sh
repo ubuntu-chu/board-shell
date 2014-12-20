@@ -145,11 +145,8 @@ fi
 
 cp $rootfs_update_tar_name ${TFTP_SERVER_DIR}/
 
-cp usr/sbin/lpc3250/rootfs_update.sh /opt/local/
-cp usr/sbin/lpc3250/rootfs_update.sh /opt/tftp/stable
+cp $rootfs_common_path/usr/sbin/lpc3250/rootfs_update.sh /opt/local/
+cp $rootfs_common_path/usr/sbin/lpc3250/rootfs_update.sh /opt/tftp/stable
 
-#拷贝打包脚本到相应的目录中
-cp $rootfs_common_path/pack-shell/$cpu_name_lpc3250/*  /home/chum/work/lte/lpc3250
-cp $rootfs_common_path/pack-shell/$cpu_name_tci6614/*  /home/chum/work/lte/
 
 

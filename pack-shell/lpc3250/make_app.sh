@@ -230,8 +230,8 @@ case "$1" in
 		;;
 
 	$MAKE_KEY)
-		(cd $APP_REPOSITORY_DIR && echo "make && make install && exit" | sb2 )
-		#(cd $APP_REPOSITORY_DIR && echo "make clean && make && make install && exit" | sb2 )
+		#(cd $APP_REPOSITORY_DIR && echo "make && make install && exit" | sb2 )
+		(cd $APP_REPOSITORY_DIR && echo "make clean && make && make install && exit" | sb2 )
 		;;
 
 	$FPGA_KEY)
