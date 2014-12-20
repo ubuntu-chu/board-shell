@@ -25,6 +25,8 @@ DEF_PACKAGE_FILE=itl-lpc3250-rootfs-update.tar.gz
 PACKAGE_FILE=$DEF_PACKAGE_FILE
 DEL_PACKAGE_FILE=1
 tar_opt="zxvf"
+have_valid_boarddefine=0
+boarddefine_change_shell="/etc/board/boarddefine-change.sh"
 
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	help
@@ -76,6 +78,46 @@ fi
 
 killapp
 
+if [ -x /etc/board/rcS ]; then
+	. /etc/board/rcS
+fi
+
+if [ -z $SHELL_PREV_DEFINE_SYS_FILE ]; then
+	boarddefine_file=$SHELL_PREV_DEFINE_SYS_FILE
+else
+	boarddefine_file="var/run/sys-pre-define-file"
+fi
+
+if [ ! -e $boarddefine_file ]; then
+	echo "$boarddefine_file file do not exsit! you must manual set baord define info by run $boarddefine_change_shell!"
+else
+	have_valid_boarddefine=1
+fi
+
+if [ $have_valid_boarddefine -eq 1 ]; then
+	first_add=0
+	for file in $boarddefine_file
+	do
+		while read line
+		do
+			debug echo $line
+			#依据获取到的key=value键值对  生成一个本地变量  以便后面对其进行引用
+			eval line_content=$line
+			if [ $first_add -eq 0 ]; then
+				#处理可能存在的变量引用
+				proc_content=$line_content
+				first_add=1
+			else
+				#处理可能存在的变量引用
+				#若proc_content中含有空格 则if [ -z $proc_content ]语句判断失效
+				proc_content="$proc_content "$line_content
+			fi
+		done  < $file
+	done
+	echo "----------------current board define----------------"
+	cat $boarddefine_file
+fi
+
 echo "rm -rf /etc/board"
 rm -rf /etc/board
 echo "tar $tar_opt $PACKAGE_FILE -C /"
@@ -87,6 +129,12 @@ if [ $? -eq 0 ]; then
 	echo "you can run /etc/board/validate-boardinfo.sh to view new boardinfo"
 	removepackage
 	echo "rootfs update success!"
+	if [ $have_valid_boarddefine -eq 1 ]; then
+		echo "recover previous board define info"
+		#$boarddefine_change_shell $board_name $hardware
+		$boarddefine_change_shell $proc_content
+		
+	fi
 else
 	echo "rootfs update failed!"
 fi

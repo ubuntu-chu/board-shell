@@ -3,21 +3,11 @@
 TFTP_SERVER_IP=192.192.192.201
 CCU_KEY="ccu"
 RRU_KEY="rru"
-APP_PAK=
+APP_PACKAGE=
 STEP_1=1
 STEP_2=2
 STEP_3=3
 STEP_4=4
-
-execute_cmd()
-{
-	echo "$@"
-	$@
-	if [ $? -ne 0 ];then
-		echo "execute failed! please check what happened!"
-		exit 1
-	fi
-}
 
 help(){
 	echo "Usage                 : $0 <board_class> <step>"
@@ -26,16 +16,26 @@ help(){
 	exit 1
 }
 
+execute_cmd()
+{
+	echo "$@"
+	$@
+	if [ $? -ne 0 ];then
+		echo "execute $@ failed! please check what happened!"
+		exit 1
+	fi
+}
+
 if [ $# -ne 2 ]; then
 	help
 fi
 
 case $1 in
 	$CCU_KEY)
-		APP_PAK=itl-lpc3250-app-ccu.tar.gz
+		APP_PACKAGE=itl-lpc3250-app-ccu.tar.gz
 		;;
 	$RRU_KEY)
-		APP_PAK=itl-lpc3250-app-rru.tar.gz
+		APP_PACKAGE=itl-lpc3250-app-rru.tar.gz
 		;;
 	*)
 		help
@@ -49,8 +49,8 @@ case $2 in
 		#将rootfs_update.sh脚本通过winscp工具上传到根文件系统中的  /usr/sbin目录下  并添加执行权限 chmod a+x rootfs_update.sh
 		#升级根文件系统
 		execute_cmd rootfs_update.sh $TFTP_SERVER_IP itl-lpc3250-rootfs-update.tar.gz
-
-		execute_cmd app_install_upgrade.sh $TFTP_SERVER_IP $APP_PAK
+		#升级应用程序包
+		execute_cmd app_install_upgrade.sh $TFTP_SERVER_IP $APP_PACKAGE
 		#升级内核
 		execute_cmd kernel_partion_flash.sh $TFTP_SERVER_IP itl-lpc3250-uImage
 		#重烧写恢复所用根文件系统  原因在于恢复所用根文件系统所有使用的uboot变量在新的uboot变量中可能已经不存在了 所以导致恢复所用根文件系统无法启动
@@ -86,8 +86,6 @@ case $2 in
 		help
 		;;
 esac
-
-
 
 
 

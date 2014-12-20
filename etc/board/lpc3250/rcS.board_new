@@ -1,0 +1,20 @@
+#支持的板型列表
+#表中各列之间使用空格作为分隔符
+#boardname definition table -- start; with a space as a delimiter
+board_name             board_type       hardware             config
+rfu_rru                1000             "3:4:5"              config_rru
+cs_rfu_rru             1100             "1:2:3"              config_rru
+ss_rfu_rru             1200             "1:2:3"              config_rru
+ifu_ccu                2000             "1:2:3"              config_none
+rs_ccu                 2100             "1:2:3"              config_none
+#boardname definition tabel -- end
+
+#配置定义区段
+config_rru={
+	lmk04806_clk_in="10M:30M"
+	rf2052_clk="200M:400M"
+}
+
+
+
+
