@@ -1,6 +1,7 @@
 #!/bin/sh
 
 PARTION_DEV_FILE=
+PARTION_DEV_BLOCK_FILE=
 MTD_PART_INDEX=
 
 partion_find()
@@ -29,6 +30,7 @@ partion_find()
 		return 1
 	fi
 	PARTION_DEV_FILE="/dev/mtd$MTD_PART_INDEX"
+	PARTION_DEV_BLOCK_FILE="/dev/mtdblock$MTD_PART_INDEX"
 
 	return 0
 }
