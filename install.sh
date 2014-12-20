@@ -1,5 +1,10 @@
 #!/bin/sh
 
+LPC3250_KEY="lpc3250"
+TCI6614_KEY="tci6614"
+ALL_KEY="all"
+
+
 ETC_BOARD_SUFFIX="etc/board"
 ETC_RCD_SUFFIX="etc/rc.d"
 USR_SBIN_SUFFIX="usr/sbin"
@@ -81,72 +86,110 @@ install_usr_share()
 	cp -a $1/misc/* $2/misc
 }
 
-rm -rf $rootfs_update_path
-mkdir -p $rootfs_update_path_bin
-mkdir -p $rootfs_update_path_sbin
-mkdir -p $rootfs_update_path_etc_board
-mkdir -p $rootfs_update_path_etc_board_private
-mkdir -p $rootfs_update_path_usr_sbin
-mkdir -p $rootfs_update_path_usr_share/file
-mkdir -p $rootfs_update_path_usr_share/misc
-mkdir -p $rootfs_update_path_usr_share/file/maigc
+help(){
+	echo "Usage                 : $0 <$LPC3250_KEY|$TCI6614_KEY|$ALL_KEY>"
+	exit 1
+}
 
-mkdir -p $rootfs_update_path/$ETC_RCD_SUFFIX
+install_rootfs_update()
+{
+	rm -rf $rootfs_update_path
+	mkdir -p $rootfs_update_path_bin
+	mkdir -p $rootfs_update_path_sbin
+	mkdir -p $rootfs_update_path_etc_board
+	mkdir -p $rootfs_update_path_etc_board_private
+	mkdir -p $rootfs_update_path_usr_sbin
+	mkdir -p $rootfs_update_path_usr_share/file
+	mkdir -p $rootfs_update_path_usr_share/misc
+	mkdir -p $rootfs_update_path_usr_share/file/maigc
 
-install_files $ETC_BOARD_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_etc_board
-install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_etc_board_private
-install_files $USR_SBIN_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_usr_sbin
-install_files $BIN_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_bin
-install_files $SBIN_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_sbin
-install_usr_share $USR_SHARE_SRC_PATH $rootfs_update_path_usr_share
+	mkdir -p $rootfs_update_path/$ETC_RCD_SUFFIX
 
-cp $rootfs_common_path/etc/$cpu_name_lpc3250/profile $rootfs_update_path/etc/
-cp $rootfs_common_path/etc/$cpu_name_lpc3250/inittab $rootfs_update_path/etc/
-cp $rootfs_common_path/etc/$cpu_name_lpc3250/fstab $rootfs_update_path/etc/
-cp $rootfs_common_path/etc/$cpu_name_lpc3250/rc.d/rcS $rootfs_update_path/$ETC_RCD_SUFFIX
+	install_files $ETC_BOARD_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_etc_board
+	install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_etc_board_private
+	install_files $USR_SBIN_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_usr_sbin
+	install_files $BIN_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_bin
+	install_files $SBIN_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_sbin
+	install_usr_share $USR_SHARE_SRC_PATH $rootfs_update_path_usr_share
 
+	cp $rootfs_common_path/etc/$cpu_name_lpc3250/profile $rootfs_update_path/etc/
+	cp $rootfs_common_path/etc/$cpu_name_lpc3250/inittab $rootfs_update_path/etc/
+	cp $rootfs_common_path/etc/$cpu_name_lpc3250/fstab $rootfs_update_path/etc/
+	cp $rootfs_common_path/etc/$cpu_name_lpc3250/rc.d/rcS $rootfs_update_path/$ETC_RCD_SUFFIX
 
-rm -rf $LPC3250_ETC_BOARD_DEST_PATH/*
-mkdir -p $LPC3250_ETC_BOARD_PRIVATE_DEST_PATH
-install_files $ETC_BOARD_SRC_PATH $cpu_name_lpc3250 $LPC3250_ETC_BOARD_DEST_PATH
-install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_lpc3250 $LPC3250_ETC_BOARD_PRIVATE_DEST_PATH
-install_files $USR_SBIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_USR_SBIN_DEST_PATH
-install_files $BIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_BIN_DEST_PATH
-install_files $SBIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_SBIN_DEST_PATH
-install_usr_share $USR_SHARE_SRC_PATH $LPC3250_USR_SHARE_DEST_PATH
+	#更新build_time
+	boardinfo_define_file="boardinfo.define"
+	BUILD_TIME_KEY="rootfs_img_build_time="
+	BUILD_TIME=`date +"%F %T"`
+	echo "$SUDO_PASSWD" | sudo -S sed -i -e "s/^$BUILD_TIME_KEY.*$/$BUILD_TIME_KEY$BUILD_TIME/g" $rootfs_update_path_etc_board/$boardinfo_define_file
+	#更新根文件系统中的文件
+	cp $rootfs_update_path_etc_board/$boardinfo_define_file $LPC3250_ETC_BOARD_DEST_PATH/$boardinfo_define_file
 
-rm -rf $TCI6614_ETC_BOARD_DEST_PATH/*
-mkdir -p $TCI6614_ETC_BOARD_PRIVATE_DEST_PATH
-install_files $ETC_BOARD_SRC_PATH $cpu_name_tci6614 $TCI6614_ETC_BOARD_DEST_PATH
-install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_tci6614 $TCI6614_ETC_BOARD_PRIVATE_DEST_PATH
-install_files $USR_SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_USR_SBIN_DEST_PATH
-#install_files $BIN_SRC_PATH $cpu_name_tci6614 $TCI6614_BIN_DEST_PATH
-#install_link $SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_SBIN_DEST_PATH
-install_usr_share $USR_SHARE_SRC_PATH $TCI6614_USR_SHARE_DEST_PATH
+	cd $rootfs_update_path
+	tar zcf $rootfs_update_tar_name ./*
+	cd ..
+	mv $rootfs_update_path/$rootfs_update_tar_name .
 
+	if [ -z ${TFTP_SERVER_DIR}  ]; then
+		echo "copy abort due to var TFTP_SERVER_DIR = null"
+		exit 0
+	fi
 
-#更新build_time
-boardinfo_define_file="boardinfo.define"
-BUILD_TIME_KEY="rootfs_img_build_time="
-BUILD_TIME=`date +"%F %T"`
-echo "$SUDO_PASSWD" | sudo -S sed -i -e "s/^$BUILD_TIME_KEY.*$/$BUILD_TIME_KEY$BUILD_TIME/g" $rootfs_update_path_etc_board/$boardinfo_define_file
-#更新根文件系统中的文件
-cp $rootfs_update_path_etc_board/$boardinfo_define_file $LPC3250_ETC_BOARD_DEST_PATH/$boardinfo_define_file
+	cp $rootfs_update_tar_name ${TFTP_SERVER_DIR}/
 
-cd $rootfs_update_path
-tar zcf $rootfs_update_tar_name ./*
-cd ..
-mv $rootfs_update_path/$rootfs_update_tar_name .
+}
 
-if [ -z ${TFTP_SERVER_DIR}  ]; then
-	echo "copy abort due to var TFTP_SERVER_DIR = null"
-	exit 0
+install_lpc3250()
+{
+	rm -rf $LPC3250_ETC_BOARD_DEST_PATH/*
+	mkdir -p $LPC3250_ETC_BOARD_PRIVATE_DEST_PATH
+	install_files $ETC_BOARD_SRC_PATH $cpu_name_lpc3250 $LPC3250_ETC_BOARD_DEST_PATH
+	install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_lpc3250 $LPC3250_ETC_BOARD_PRIVATE_DEST_PATH
+	install_files $USR_SBIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_USR_SBIN_DEST_PATH
+	install_files $BIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_BIN_DEST_PATH
+	install_files $SBIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_SBIN_DEST_PATH
+	install_usr_share $USR_SHARE_SRC_PATH $LPC3250_USR_SHARE_DEST_PATH
+}
+
+install_tci6614()
+{
+	rm -rf $TCI6614_ETC_BOARD_DEST_PATH/*
+	mkdir -p $TCI6614_ETC_BOARD_PRIVATE_DEST_PATH
+	install_files $ETC_BOARD_SRC_PATH $cpu_name_tci6614 $TCI6614_ETC_BOARD_DEST_PATH
+	install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_tci6614 $TCI6614_ETC_BOARD_PRIVATE_DEST_PATH
+	install_files $USR_SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_USR_SBIN_DEST_PATH
+	#install_files $BIN_SRC_PATH $cpu_name_tci6614 $TCI6614_BIN_DEST_PATH
+	#install_link $SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_SBIN_DEST_PATH
+	install_usr_share $USR_SHARE_SRC_PATH $TCI6614_USR_SHARE_DEST_PATH
+}
+
+if [ $# -ne 1 ]; then
+	help
 fi
 
-cp $rootfs_update_tar_name ${TFTP_SERVER_DIR}/
+case "$1" in
+	$LPC3250_KEY)
+		install_lpc3250
+		install_rootfs_update
+		;;
+
+	$TCI6614_KEY)
+		install_tci6614
+		;;
+
+	$ALL_KEY)
+		install_lpc3250
+		install_rootfs_update
+		install_tci6614
+		;;
+
+	*)
+		help
+		;;
+esac
 
 cp $rootfs_common_path/usr/sbin/lpc3250/rootfs_update.sh /opt/local/
 cp $rootfs_common_path/usr/sbin/lpc3250/rootfs_update.sh /opt/tftp/stable
 
-
+exit 0
 

@@ -52,7 +52,7 @@ get_leb_cnt()
 }
 
 PARTION_BOARDINFO_FILE=$ROOTFS_VOL_SRC_DIR/etc/board/boardinfo.define
-BUILD_TIME_KEY="build_time="
+BUILD_TIME_KEY="rootfs_img_build_time="
 
 BUILD_TIME=`date +"%F %T"`
 echo "$SUDO_PASSWD" | sudo -S sed -i -e "s/^$BUILD_TIME_KEY.*$/$BUILD_TIME_KEY$BUILD_TIME/g" $PARTION_BOARDINFO_FILE

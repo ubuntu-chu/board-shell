@@ -57,7 +57,7 @@ cpu_identify_proc(){
 	#使用双引号 代表使用字符串匹配
 	#value=`awk '{if ($1 == "'"${1}"'" && $2 == "'"${2}"'"){print $0}}' $BOARD_INFO_SRC_FILE`
 	#不使用双引号  代表使用数字匹配
-	value=`awk '{if ($1 == "'"${1}"'" && $2 == '${2}'){print $0}}' $BOARD_INFO_SRC_FILE`
+	value=`awk '{if ($1 == "'"${1}"'" && $2 == "'"${2}"'"){print $0}}' $BOARD_INFO_SRC_FILE`
 	#判断是否查找到
 	if [ -z "$value" ]; then
 		#使用数字匹配 board_id
