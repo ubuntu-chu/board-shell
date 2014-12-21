@@ -1,20 +1,86 @@
 #支持的板型列表
 #表中各列之间使用空格作为分隔符
 #boardname definition table -- start; with a space as a delimiter
-board_name             board_type       hardware             config
-rfu_rru                1000             "(3):4:5"            config_rru
-cs_rfu_rru             1100             "(1):2:3"            config_rru
-ss_rfu_rru             1200             "(1):2:3"            config_rru
-ifu_ccu                2000             "(1):2:3"            config_none
-rs_ccu                 2100             "(1):2:3"            config_none
+board_name             board_type       hardware             
+rfu_rru                1000             rfu_rru_hardware_3:rfu_rru_hardware_4
+cs_rfu_rru             1100             cs_rfu_rru_hardware_1
+ss_rfu_rru             1200             ss_rfu_rru_hardware_1
+ifu_ccu                2000             ifu_ccu_hardware_1
+rs_ccu                 2100             rs_ccu_hardware_1
 #boardname definition tabel -- end
 
-#配置定义区段
-config_rru={
-	lmk04806_clk_in="(10M):30M"
-	rf2052_clk="(200000000):400000000:600000000:800000000"
+#defalut=yes 代表默认使用此值    default=no   
+#一种板名的所有硬件版本中必须只有一个硬件版本defaule值为yes
+rfu_rru_hardware_3={
+	value=3
+	default=yes
+	config=lmk04806_clkin_def_10M:rf2052_def_200000000
+}
+rfu_rru_hardware_4={
+	value=4
+	default=no
+	config=lmk04806_clkin_def_30M:rf2052_def_200000000
 }
 
+cs_rfu_rru_hardware_1={
+	value=1
+	default=yes
+	config=lmk04806_clkin_def_10M:rf2052_def_200000000
+}
+
+ss_rfu_rru_hardware_1={
+	value=1
+	default=yes
+	config=lmk04806_clkin_def_10M:rf2052_def_200000000
+}
+
+ifu_ccu_hardware_1={
+	value=1
+	default=yes
+	config=lmk04806_clkin_def_10M:rf2052_def_200000000
+}
+
+rs_ccu_hardware_1={
+	value=1
+	default=yes
+	config=lmk04806_clkin_def_10M:rf2052_def_200000000
+}
+
+lmk04806_clkin_def_10M={
+	name=lmk04806_clkin
+	default=10M
+	range=10M:30M
+}
+
+lmk04806_clkin_def_30M={
+	name=lmk04806_clkin
+	default=30M
+	range=10M:30M
+}
+
+rf2052_def_200000000={
+	name=rf2051_clk
+	default=200000000
+	range=200000000:400000000:600000000:800000000
+}
+
+rf2052_def_400000000={
+	name=rf2051_clk
+	default=400000000
+	range=200000000:400000000:600000000:800000000
+}
+
+rf2052_def_600000000={
+	name=rf2051_clk
+	default=600000000
+	range=200000000:400000000:600000000:800000000
+}
+
+rf2052_def_800000000={
+	name=rf2051_clk
+	default=800000000
+	range=200000000:400000000:600000000:800000000
+}
 
 #echo "(10M):30M" | cut -d: -f1|tr -d '()'
 #echo "(10M):30M" | awk -F: '{print $1}'|tr -d '()'
