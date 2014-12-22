@@ -46,40 +46,46 @@ rs_ccu_hardware_1={
 	config=lmk04806_clkin_def_10M:rf2052_def_200000000
 }
 
-lmk04806_clkin_def_10M={
+lmk04806_clkin={
+	type=1
 	name=lmk04806_clkin
-	default=10M
 	range=10M:30M
+}
+
+lmk04806_clkin_def_10M={
+	default=10M
+	define=lmk04806_clkin
 }
 
 lmk04806_clkin_def_30M={
-	name=lmk04806_clkin
 	default=30M
-	range=10M:30M
+	define=lmk04806_clkin
+}
+
+rf2052_clk={
+	type=1
+	name=rf2051_clk
+	range=200000000:400000000:600000000:800000000
 }
 
 rf2052_def_200000000={
-	name=rf2051_clk
 	default=200000000
-	range=200000000:400000000:600000000:800000000
+	define=rf2052_clk
 }
 
 rf2052_def_400000000={
-	name=rf2051_clk
 	default=400000000
-	range=200000000:400000000:600000000:800000000
+	define=rf2052_clk
 }
 
 rf2052_def_600000000={
-	name=rf2051_clk
 	default=600000000
-	range=200000000:400000000:600000000:800000000
+	define=rf2052_clk
 }
 
 rf2052_def_800000000={
-	name=rf2051_clk
 	default=800000000
-	range=200000000:400000000:600000000:800000000
+	define=rf2052_clk
 }
 
 #echo "(10M):30M" | cut -d: -f1|tr -d '()'
