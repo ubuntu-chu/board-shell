@@ -1,74 +1,343 @@
 #!/bin/bash
 
-if [ -x /etc/board/rcS ]; then
-	. /etc/board/rcS
+boarddefine_utility_file="/etc/board/boarddefine-utility.sh"
+if [ ! -e $boarddefine_utility_file ]; then
+	echo "$boarddefine_utility_file  do not exist!"
+	exit 1
 fi
-if [ -x /etc/board/rcS.board ]; then
-	. /etc/board/rcS.board
-fi
+. $boarddefine_utility_file
 
+DEBUG=0
+
+boardname_define_file=/etc/board/rcS.board_new
+#板名表起始 结束标记
+boardname_table_start="#boardname definition table -- start"
+boardname_table_end="#boardname definition tabel -- end"
+#暂时文件
+boardname_file="/var/tmp/boardname_temp_file"
+
+title_array=()
+boardname_array=()
+boardtype_array=()
+hardware_array=()
+
+hardwarevalue_array=()
+hardwarevalue_default=
+hardwareconfig_array=()
+
+configname_array=()
+configdefault_array=()
+configrange_array=()
+configtype_array=()
+
+#新配置数组
+new_config_array=()
+#新配置数组索引
+config_array_index=0
 new_board_name=
+assigned_board_name=
+assigned_hardware=
+show_current_board_define=0
 new_board_type=
 new_hardware=
 skip_key="skip"
-manual_set=0
-with_hardware=0
 
+#数组索引
+array_index=0
+param_board_name="--board_name"
+param_hardware="--hardware"
+param_debug="--debug"
+param_help="--help"
+param_current="--current"
+#参数值数组
+paramvalue_array=()
+#参数key数组
+paramkey_array=()
 
 help(){
-	echo "Usage                 : $0 [board_name] [hardware]"
-	echo "Param board_name      : ${board_name_array[*]}"
-	echo "Param hardware        : "
-	for name in ${board_name_array[*]};
+	echo "Usage            : $0 [$param_help|$param_current|$param_debug|$param_board_name|$param_hardware]"
+	echo "Param $param_help: show help"
+	echo "Param $param_current: show current board define"
+	echo "Param $param_debug: enable debug"
+	echo "Param $param_board_name : ${boardname_array[*]}"
+	echo "Param $param_hardware   : "
+
+	help_index=0
+	#遍历获取硬件信息
+	while :;
 	do
-		boarddefine_get $name
-		echo "                        $name - (${default_hardware_list[*]})"
+		#获取此board_name所对应的硬件版本信息及配置信息
+		hardwareinfo_get "${hardware_array[$help_index]}"
+		echo "                   board_name: ${boardname_array[$help_index]}"
+		echo "                   hardware_default=${hardwarevalue_default}"
+
+		inner_index=0
+		while :;
+		do
+			echo "                   {"
+			echo "                       hardware=${hardwarevalue_array[$inner_index]}"
+			echo "                       config=${hardwareconfig_array[$inner_index]}"
+			if [ $(($inner_index+1)) -eq ${#hardwarevalue_array[*]} ]; then
+				echo "                   }"
+			else
+				echo "                   },"
+			fi
+			inner_index=$(($inner_index+1))
+			if [ $inner_index -ge ${#hardwarevalue_array[*]} ]; then
+				break
+			fi
+		done
+		echo ""
+		help_index=$(($help_index+1))
+		if [ $help_index -ge ${#boardname_array[*]} ]; then
+			break
+		fi
 	done
 	exit 1
-
 }
 
-if [ $# -ge 1 ]; then
+init_array()
+{
+	index=0
+	for i in $1
+	do
+		eval $2[$index]="$i"
+		index=$(($index+1))
+	done
+}
 
-	if [ $1 = "help" ]; then
-		help
+arrayindex_get()
+{
+	array_index=0
+	eval array_size=\${#${1}[*]}
+	debug echo  "array_size=$array_size"
+	while :;
+	do
+		eval "array_index_value=\${$1[${array_index}]}"
+		debug echo "$1[$array_index]=$array_index_value"
+		if [ ${array_index_value} = "$2" ]; then
+			break
+		fi
+		array_index=$(($array_index+1))
+		if [ $array_index -ge ${array_size} ]; then
+			debug echo "$2 can not be found in array:$1"
+			return 1
+		fi
+	done
+	debug echo "array_index=$array_index"
+
+	return 0
+}
+
+new_config_array_add()
+{
+	new_config_array[$config_array_index]="$1"
+	config_array_index=$(($config_array_index + 1))
+}
+
+boarddefine_array_init()
+{
+	arrayindex_get title_array "$1"
+
+	#转化为awk格式
+	array_index=$(($array_index + 1))
+	list=`cat $boardname_file| awk '{print $"'${array_index}'"}' | tr '\n' ' '`
+	init_array "$list" "$2"
+}
+
+#获取硬件版本信息
+hardwareinfo_get()
+{
+	hardwarevalue_array=()
+	hardwarevalue_default=
+	hardwareconfig_array=()
+
+	list=`echo "$1" | tr ':' ' '`
+	debug echo "------------------------------------------"
+	debug echo $list
+
+	index=0
+	for var in $list
+	do
+		#debug echo $var
+		sed -n "/^""${var}""={/,/^}/ p"  $boardname_define_file \
+			| sed '1d;$d' | awk '{print $0 > "'"${temp_file}"'"}'
+		file_lines_proc $temp_file
+		#debug cat $temp_file
+ 		while read line
+ 		do
+ 			#debug echo $line
+ 			#依据获取到的key=value键值对  生成一个本地变量  以便后面对其进行引用
+ 			eval $line
+ 		done  < $temp_file
+
+		hardwarevalue_array[$index]=$value
+		if [ $default = "yes" ]; then
+			if [ -z $hardwarevalue_default ]; then
+				hardwarevalue_default=$value
+			else
+				echo "hardware list have two or more defaule value"
+				exit 1
+			fi
+		fi
+		hardwareconfig_array[$index]=$config
+		index=$(($index+1))
+	done
+
+	debug echo "hardwarevalue_array=${hardwarevalue_array[*]}"
+	debug echo "hardwarevalue_default=${hardwarevalue_default}"
+	debug echo "hardwareconfig_array=${hardwareconfig_array[*]}"
+}
+
+#获取硬件版本配置详细信息
+hardwareconfig_get()
+{
+	configname_array=()
+	configdefault_array=()
+	configrange_array=()
+
+	list=`echo "$1" | tr ':' ' '`
+	debug echo "------------------------------------------"
+
+	index=0
+	for var in $list
+	do
+		generate_var_from_file "${var}" "$boardname_define_file"
+		if [ -z $default ]; then
+			echo "config:$var  key[default] value undefined"
+			exit 1
+		else
+			configdefault_array[$index]=$default
+		fi
+
+		if [ -z $define ]; then
+			echo "config:$var  key[define] value undefined"
+			exit 1
+		else
+			generate_var_from_file "${define}" "$boardname_define_file"
+		fi
+
+		if [ -z $name ]; then
+			echo "config:$var  key[name] value undefined"
+			exit 1
+		else
+			configname_array[$index]=$name
+		fi
+		if [ -z $range ]; then
+			echo "config:$var  key[range] value undefined"
+			exit 1
+		else
+			configrange_array[$index]=$range
+		fi
+		if [ -z $type ]; then
+			echo "config:$var  key[type] value undefined"
+			exit 1
+		else
+			configtype_array[$index]=$type
+		fi
+		index=$(($index+1))
+	done
+
+	debug echo "configname_array=${configname_array[*]}"
+	debug echo "configdefault_array=${configdefault_array[*]}"
+	debug echo "configrange_array=${configrange_array[*]}"
+}
+
+
+#生成boardname_file文件
+sed -n "/^""${boardname_table_start}""/,/^""${boardname_table_end}""/ p"  $boardname_define_file \
+	| sed '1d;2d;$d' | awk '{print $0 > "'"${boardname_file}"'"}'
+
+#初始化相关数组
+list=`sed -n "/^board_name \+board_type/ p"  $boardname_define_file` 
+init_array "$list" title_array
+debug echo title_array=${title_array[*]}
+
+boarddefine_array_init "board_name" boardname_array
+debug echo boardname_array=${boardname_array[*]}
+
+boarddefine_array_init "board_type" boardtype_array
+debug echo boardtype_array=${boardtype_array[*]}
+
+boarddefine_array_init "hardware" hardware_array
+debug echo hardware_array=${hardware_array[*]}
+
+index=0
+#解析所有参数
+while [ $# -gt 0  ]; 
+do    
+	case "$1" in
+		$param_debug)
+			# 是 "-d" 或 "--debug" 参数?
+			DEBUG=1
+			;;
+		$param_current)
+			show_current_board_define=1
+			;;
+		$param_help)
+			help
+			;;
+		$param_board_name)
+			assigned_board_name="$2"
+			shift
+			;;
+		$param_hardware)
+			assigned_hardware="$2"
+			shift
+			;;
+		--*)
+			paramkey_array[$index]="$1"
+			paramvalue_array[$index]="$2"
+			index=$(($index + 1))
+			shift
+			;;
+		*)
+			echo "$1 : invalid param! please check!"
+			exit 2
+			;;
+	esac
+	# 检查剩余的参数.
+	shift       
+done
+
+debug echo "paramkey_array=${paramkey_array[*]}"
+debug echo "paramvalue_array=${paramvalue_array[*]}"
+
+
+generate_var_from_file "${PREV_DEFINE_KEY}" "$BOARD_INFO_SRC_FILE"
+
+echo "----------------current board define----------------"
+#遍历数组 打印出当前板子定义信息
+if [ ${#key_array[*]} -ne 0 ]; then
+	index=0
+	while :;
+	do
+		echo "${key_array[$index]}=${value_array[$index]}"
+		index=$(($index + 1))
+		if [ $index -ge ${#key_array[*]} ]; then
+			break
+		fi
+	done
+fi
+
+if [ $show_current_board_define -eq 1 ]; then
+	#当前环境支持板载定义配置
+	if [ ${#key_array[*]} -ne 0 ]; then
+		exit 0
+	#不支持配置
 	else
-		echo "-------------manual change board define------------"
-		manual_set=1
-		new_board_name=$1
-		var=$new_board_name
-	fi
-	if [ $# -eq 2 ]; then
-		new_hardware=$2
-		with_hardware=1
+		exit 1
 	fi
 fi
 
+echo "----------------change board define----------------"
 
-if [ -z $new_board_name ]; then
-	echo -n "" > $SHELL_PREV_DEFINE_SYS_FILE
-	section_content_get $PREV_DEFINE_KEY $BOARD_INFO_SRC_FILE $SHELL_PREV_DEFINE_SYS_FILE
-
-	for file in $SHELL_PREV_DEFINE_SYS_FILE
-	do
-		while read line
-		do
-			debug echo $line
-			#依据获取到的key=value键值对  生成一个本地变量  以便后面对其进行引用
-			eval $line
-		done  < $file
-	done
-
-	echo "----------------current board define----------------"
-	cat $SHELL_PREV_DEFINE_SYS_FILE
-
-	echo "----------------change board define----------------"
-	echo ""
+if [ -z $assigned_board_name ]; then
 	echo "step1:choose board name"
 
 	while true
 	do
-		select var in "$skip_key" ${board_name_array[*]}; do
+		select var in "$skip_key" ${boardname_array[*]}; do
 			break
 		done
 
@@ -79,51 +348,47 @@ if [ -z $new_board_name ]; then
 				new_board_name=$var
 			fi
 			break;
+		else
+			echo "input invalid! please input again!"
+			continue
 		fi
 	done
-fi
-
-echo ""
-echo "new board name: $new_board_name"
-boarddefine_get $new_board_name
-new_board_type=${default_board_type}
-echo "new board type: ${new_board_type}"
-if [ $skip_key = $var ]; then
-	default_hardware=$hardware
-else
-	default_hardware=${default_hardware_list[0]}
-fi
-
-if [ $manual_set -eq 1 ]; then
-	if [ $with_hardware -eq 0 ]; then
-		new_hardware=$default_hardware
-	else
-		index=0 
-		#检查hardware参数是否正确
-		for var in ${default_hardware_list[*]};
-		do
-			if [ $new_hardware = $var ]; then
-				break
-			fi
-			index=$(($index+1))
-		done
-		if [ $index = ${#default_hardware_list[*]} ]; then
-			echo "new hardware is invalid!  valid hardware:(${default_hardware_list[*]})"
-			exit 1
-		fi
+else 
+	#检查设置的baord_name是否正确
+	arrayindex_get boardname_array "$assigned_board_name"
+	if [ $? -ne 0 ]; then
+		echo "board name invalid! valid board name:${boardname_array[*]}"
+		exit 1
 	fi
-else
-	echo "defaule hardware: ${default_hardware}"
-	echo ""
+	new_board_name=$assigned_board_name
 fi
 
+echo "new board name=$new_board_name"
+new_config_array_add "board_name=$new_board_name"
 
-if [ -z $new_hardware ]; then
+#获取board_type
+arrayindex_get boardname_array "$new_board_name"
+new_board_type=${boardtype_array[$array_index]}
+echo "new board type=${new_board_type}"
+new_config_array_add "board_type=$new_board_type"
+
+#获取硬件版本
+hardwareinfo_get "${hardware_array[$array_index]}"
+
+if [ -z $assigned_hardware ]; then
+	if [ $skip_key = $var ]; then
+		#使用当前版本
+		default_hardware=$hardware
+	else
+		default_hardware=${hardwarevalue_default}
+	fi
+	echo ""
+	echo "current hardware: ${default_hardware}"
+
 	echo "step2:choose hardware"
-
 	while true
 	do
-		select var in "$skip_key" ${default_hardware_list[*]}; do
+		select var in "$skip_key" ${hardwarevalue_array[*]}; do
 			break
 		done
 
@@ -133,74 +398,190 @@ if [ -z $new_hardware ]; then
 			else
 				new_hardware=$var
 			fi
-			echo ""
 			break;
+		else
+			echo "input invalid! please input again!"
+			continue
+		fi
+	done
+#未通过形参设置 hardware
+else
+	#检查设置的hardware是否正确
+	arrayindex_get hardwarevalue_array "$assigned_hardware"
+	if [ $? -ne 0 ]; then
+		echo "hardware invalid! valid hardware:${hardwarevalue_array[*]}"
+		exit 1
+	fi
+	new_hardware=$assigned_hardware
+fi
+
+echo "new hardware=$new_hardware"
+new_config_array_add "hardware=$new_hardware"
+#判断所选择的硬件版本 在数组中的索引  使用此索引去查找此硬件版本对应的配置
+arrayindex_get hardwarevalue_array "$new_hardware"
+hardwareconfig_get ${hardwareconfig_array[$array_index]}
+
+#配置部分
+if [ ! -z "$assigned_board_name" ]; then
+	#通过参数进行配置
+	#判断是否有非法参数
+	i=0
+	configmatch_array=()
+	#遍历数组 要判断key 和 value
+	while :;
+	do
+		if [ $i -ge ${#paramkey_array[*]} ]; then
+			break
+		fi
+		#key的值 去除--前缀
+		key=`echo ${paramkey_array[$i]}|tr -d '-'`
+		value=${paramvalue_array[$i]}
+		index=0
+		is_find=0
+		while :;
+		do
+			#配置名称数组
+			config_name=${configname_array[$index]}
+			if [ "$key" = "$config_name" ]; then
+				config_list=`echo ${configrange_array[$index]} | tr ':' ' '`
+				#key值 相等   进一步判断value是否合法
+				is_find=1
+				debug echo "config_list=$config_list"
+				#注意此时： for里面config_list的写法
+				for config_var in $config_list;
+				do
+					debug  echo "value=$value"
+					debug  "config_var=$config_var"
+					#value 合法判断
+					if [ "$value" = "$config_var" ]; then
+						is_find=2
+						configmatch_array[$i]="$index"
+						break
+					fi
+				done
+			fi
+			index=$(($index + 1))
+			if [ $index -ge ${#configname_array[*]} ]; then
+				break
+			fi
+		done
+		if [ $is_find -ne 2 ]; then
+			if [ $is_find -eq 1 ]; then
+				echo "$key=$value : $value invalid, please check!"
+			else
+				echo "$key=$value : $key invalid, please check!"
+			fi
+			exit 4	
+		fi
+		echo "new ${key}=${value}"
+		new_config_array_add "${key}=${value}"
+		i=$(($i + 1))
+	done
+	#判断传入的形参值是否已经全部配置完所有参数 对于尚未配置的参数 使用默认配置
+	if [ ${#configmatch_array[*]} -ne ${#configname_array[*]} ]; then
+		#遍历默认参数列表 
+		index_list=`seq 0 $((${#configname_array[*]} - 1))`
+		debug echo "index_list=$index_list"
+		tr_list=`echo ${configmatch_array[*]} | tr -d ' '`
+		debug echo "tr_list=$tr_list"
+		if [ -z $tr_list ]; then
+			#defaut_list="$index_list"
+			defaut_list=`echo $index_list| tr '\n' ' '`
+		else
+			defaut_list=`echo $index_list | tr -d $tr_list`
+		fi
+		debug echo "default_list=$defaut_list"
+		for defaut_value in $defaut_list;
+		do
+			new_config_array_add "${configname_array[$defaut_value]}=${configdefault_array[$defaut_value]}"
+		done
+	fi
+else
+	echo ""
+	echo "step3:choose configuration"
+
+	index=0
+	while :;
+	do
+		config_name=${configname_array[$index]}
+		config_defalut_value=${configdefault_array[$index]}
+		#目前config_type未使用
+		config_type=${configtype_array[$index]}
+		echo "config: ${config_name}"
+		echo "default value: ${config_defalut_value}"
+		config_list=`echo ${configrange_array[$index]} | tr ':' ' '`
+
+		select var in "$skip_key" ${config_list}; do
+			break
+		done
+
+		if [ ! -z $var ]; then
+			debug set -x
+			if [ $skip_key = $var ]; then
+				eval config_current_value=\$${config_name}
+				if [ -z $config_current_value ]; then
+					new_config=${config_defalut_value}
+				else
+					new_config=${config_current_value}
+				fi
+			else
+				new_config=$var
+			fi
+			debug set +x
+			echo "new value: $new_config"
+			echo ""
+			new_config_array_add "${config_name}=${new_config}"
+		else
+			echo "input invalid! please input again!"
+			continue
+		fi
+
+		index=$(($index + 1))
+		if [ $index -ge ${#configname_array[*]} ]; then
+			break
 		fi
 	done
 fi
 
-echo "new hardware: $new_hardware"
+echo "-----------------new board define------------------"
+echo "${PREV_DEFINE_KEY}={" > $temp_file
 
-echo "------------write back new board define------------"
+index=0
+while :;
+do
+	config=${new_config_array[$index]}
+	echo $config
+	echo "    $config" >> $temp_file
 
-if [ $# -eq 3 ]; then
-	DEST_BOARD_INFO_FILE=$3
-else
-	DEST_BOARD_INFO_FILE=$BOARD_INFO_SRC_FILE
+	index=$(($index + 1))
+	if [ $index -ge ${#new_config_array[*]} ]; then
+		break
+	fi
+done
+echo "}" >> $temp_file
+
+#测试使用
+#hardwareconfig_get "${hardwareconfig_array[*]}"
+#hardwareinfo_get "${hardware_array[1]}"
+
+
+value=`grep -n "${PREV_DEFINE_KEY}={"  $BOARD_INFO_SRC_FILE`
+if [ $? -ne 0 ]; then
+	echo "$BOARD_INFO_SRC_FILE donot have ${PREV_DEFINE_KEY} line"
+	exit 1
 fi
+line_no=`echo $value|cut -d ':' -f1`
+
+debug echo "match line no = $line_no"
+line_no=$(($line_no-1))
+
+#将原先的区段删除   再在指定的位置上 添加新的定义
+sed -i "/^"${PREV_DEFINE_KEY}"={/,/^\}/ d\
+		;"${line_no}" r "${temp_file}"" $DEST_BOARD_INFO_FILE
 
 
-sed -i "/^"${PREV_DEFINE_KEY}"={/,/^\}/ s/board_name=.*/board_name="${new_board_name}"/\
-	;/^"${PREV_DEFINE_KEY}"={/,/^\}/ s/board_type=.*/board_type="${new_board_type}"/\
-	;/^"${PREV_DEFINE_KEY}"={/,/^\}/ s/hardware=.*/hardware="${new_hardware}"/" $DEST_BOARD_INFO_FILE
-
-
-#index=0
-#while true
-#do
-#	if [ ${board_name_array[$index]} = ${board_name} ]; then
-#		break;
-#	fi
-#	let "index = $index + 1"
-#	if [ $index -ge ${#board_name_array[*]} ]; then
-#		break
-#	fi
-#done
-#
-#if [ $index -ge ${#board_name_array[*]} ]; then
-#	echo "$board_name is invalid!"
-#	exit 3
-#fi
-#
-#board_type=${board_type_array[$index]}
-#echo "new board type: ${board_type}"
-#echo ""
-#echo "step2:choose hardware"
-
-#echo "init hardware:${init_hardware_array[$index]}"
-#while true
-#do
-#	read -p "enter new hardware:" hardware
-#
-#	if [ -z $hardware ]; then
-#		hardware=${init_hardware_array[$index]}
-#		break
-#	fi
-#	case "$hardware" in  
-#		*[!0-9]* ) 
-#			echo "invalid input! please input again"
-#			continue
-#		;;  
-#		* ) 
-#			break
-#		;;
-#	esac
-#done
-#
-#echo "new hardware: $hardware"
-
-
-
-
+#删除临时文件
+rm -rf $temp_file
+rm -rf $boardname_file
 
 
