@@ -40,6 +40,7 @@ config_array_index=0
 new_board_name=
 assigned_board_name=
 assigned_hardware=
+show_current_board_define=0
 new_board_type=
 new_hardware=
 skip_key="skip"
@@ -50,6 +51,7 @@ param_board_name="--board_name"
 param_hardware="--hardware"
 param_debug="--debug"
 param_help="--help"
+param_current="--current"
 #参数值数组
 paramvalue_array=()
 #参数key数组
@@ -58,8 +60,9 @@ paramkey_array=()
 DEST_BOARD_INFO_FILE=$BOARD_INFO_SRC_FILE
 
 help(){
-	echo "Usage            : $0 [$param_help|$param_debug|$param_board_name|$param_hardware]"
+	echo "Usage            : $0 [$param_help|$param_current|$param_debug|$param_board_name|$param_hardware]"
 	echo "Param $param_help: show help"
+	echo "Param $param_current: show current board define"
 	echo "Param $param_debug: enable debug"
 	echo "Param $param_board_name : ${boardname_array[*]}"
 	echo "Param $param_hardware   : "
@@ -207,6 +210,7 @@ generate_var_from_file()
 	#值数组
 	value_array=()
 
+	echo -n "" > $temp_file
 	sed -n "/^""${1}""={/,/^}/ p"  $2 \
 		| sed '1d;$d' | awk '{print $0 > "'"${temp_file}"'"}'
 	file_lines_proc $temp_file
@@ -309,6 +313,9 @@ do
 			# 是 "-d" 或 "--debug" 参数?
 			DEBUG=1
 			;;
+		$param_current)
+			show_current_board_define=1
+			;;
 		$param_help)
 			help
 			;;
@@ -353,6 +360,16 @@ if [ ${#key_array[*]} -ne 0 ]; then
 			break
 		fi
 	done
+fi
+
+if [ $show_current_board_define -eq 1 ]; then
+	#当前环境支持板载定义配置
+	if [ ${#key_array[*]} -ne 0 ]; then
+		exit 0
+	#不支持配置
+	else
+		exit 1
+	fi
 fi
 
 echo "----------------change board define----------------"
