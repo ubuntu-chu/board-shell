@@ -9,7 +9,7 @@ fi
 
 DEBUG=0
 
-boardname_define_file=/etc/board/rcS.board_new
+boardname_define_file="/etc/board/rcS.board"
 #板名表起始 结束标记
 boardname_table_start="#boardname definition table -- start"
 boardname_table_end="#boardname definition tabel -- end"
@@ -40,6 +40,7 @@ assigned_hardware=
 show_current_board_define=0
 new_board_type=
 new_hardware=
+board_name_changed=0
 skip_key="skip"
 
 #数组索引
@@ -69,24 +70,46 @@ help(){
 		#获取此board_name所对应的硬件版本信息及配置信息
 		hardwareinfo_get "${hardware_array[$help_index]}"
 		echo "                   board_name: ${boardname_array[$help_index]}"
-		echo "                   hardware_default=${hardwarevalue_default}"
+		echo "                   hardware={"
+		echo "                       default_ver=${hardwarevalue_default}"
 
 		inner_index=0
 		while :;
 		do
-			echo "                   {"
-			echo "                       hardware=${hardwarevalue_array[$inner_index]}"
-			echo "                       config=${hardwareconfig_array[$inner_index]}"
+			echo "                       {"
+			echo "                           hardware_ver=${hardwarevalue_array[$inner_index]}"
+			echo "                           config={"
+			hardwareconfig_get ${hardwareconfig_array[$inner_index]}
+			config_index=0
+			while :;
+			do
+				echo "                               {"
+				echo "                                   name=${configname_array[$config_index]}"
+				echo "                                   default=${configdefault_array[$config_index]}"
+				echo "                                   range=`echo ${configrange_array[$config_index]} | tr ':' ' '`"
+				if [ $(($config_index+1)) -eq ${#configname_array[*]} ]; then
+					echo "                               }"
+				else
+					echo "                               },"
+				fi
+				config_index=$(($config_index + 1))
+				if [ $config_index -ge ${#configname_array[*]} ]; then
+					break
+				fi
+			done
+
+			echo "                           }"
 			if [ $(($inner_index+1)) -eq ${#hardwarevalue_array[*]} ]; then
-				echo "                   }"
+				echo "                       }"
 			else
-				echo "                   },"
+				echo "                       },"
 			fi
 			inner_index=$(($inner_index+1))
 			if [ $inner_index -ge ${#hardwarevalue_array[*]} ]; then
 				break
 			fi
 		done
+		echo "                   }"
 		echo ""
 		help_index=$(($help_index+1))
 		if [ $help_index -ge ${#boardname_array[*]} ]; then
@@ -334,6 +357,7 @@ echo "----------------change board define----------------"
 
 if [ -z $assigned_board_name ]; then
 	echo "step1:choose board name"
+	echo "current board name: ${board_name}"
 
 	while true
 	do
@@ -363,6 +387,11 @@ else
 	new_board_name=$assigned_board_name
 fi
 
+if [ $new_board_name = $board_name ]; then
+	board_name_changed=0
+else
+	board_name_changed=1
+fi
 echo "new board name=$new_board_name"
 new_config_array_add "board_name=$new_board_name"
 
@@ -375,36 +404,39 @@ new_config_array_add "board_type=$new_board_type"
 #获取硬件版本
 hardwareinfo_get "${hardware_array[$array_index]}"
 
+#未通过形参设置 hardware
 if [ -z $assigned_hardware ]; then
-	if [ $skip_key = $var ]; then
+	if [ $board_name_changed -eq 0 ]; then
 		#使用当前版本
 		default_hardware=$hardware
 	else
 		default_hardware=${hardwarevalue_default}
 	fi
-	echo ""
-	echo "current hardware: ${default_hardware}"
+	if [ -z $assigned_board_name ]; then
+		echo ""
 
-	echo "step2:choose hardware"
-	while true
-	do
-		select var in "$skip_key" ${hardwarevalue_array[*]}; do
-			break
-		done
+		echo "step2:choose hardware"
+		echo "current hardware: ${default_hardware}"
+		while true
+		do
+			select var in "$skip_key" ${hardwarevalue_array[*]}; do
+				break
+			done
 
-		if [ ! -z $var ]; then
-			if [ $skip_key = $var ]; then
-				new_hardware=$default_hardware
+			if [ ! -z $var ]; then
+				if [ $skip_key = $var ]; then
+					new_hardware=$default_hardware
+				else
+					new_hardware=$var
+				fi
+				break;
 			else
-				new_hardware=$var
+				echo "input invalid! please input again!"
+				continue
 			fi
-			break;
-		else
-			echo "input invalid! please input again!"
-			continue
-		fi
-	done
-#未通过形参设置 hardware
+		done
+	fi
+#通过形参设置 hardware
 else
 	#检查设置的hardware是否正确
 	arrayindex_get hardwarevalue_array "$assigned_hardware"
@@ -497,6 +529,7 @@ if [ ! -z "$assigned_board_name" ]; then
 		done
 	fi
 else
+#手动设置配置
 	echo ""
 	echo "step3:choose configuration"
 
@@ -508,7 +541,17 @@ else
 		#目前config_type未使用
 		config_type=${configtype_array[$index]}
 		echo "config: ${config_name}"
-		echo "default value: ${config_defalut_value}"
+		if [ $board_name_changed -eq 0 ]; then
+			eval config_name_value=\$${config_name}
+		else
+			config_name_value="${config_defalut_value}"
+		fi
+		if [ -z $config_name_value ]; then
+			echo "current value:null  use default value: ${config_defalut_value}"
+		else
+			echo "current value:$config_name_value"
+		fi
+		#echo "default value: ${config_defalut_value}"
 		config_list=`echo ${configrange_array[$index]} | tr ':' ' '`
 
 		select var in "$skip_key" ${config_list}; do
@@ -577,7 +620,7 @@ line_no=$(($line_no-1))
 
 #将原先的区段删除   再在指定的位置上 添加新的定义
 sed -i "/^"${PREV_DEFINE_KEY}"={/,/^\}/ d\
-		;"${line_no}" r "${temp_file}"" $DEST_BOARD_INFO_FILE
+		;"${line_no}" r "${temp_file}"" $BOARD_INFO_SRC_FILE
 
 
 #删除临时文件
