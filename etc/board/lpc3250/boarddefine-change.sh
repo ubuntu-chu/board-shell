@@ -42,6 +42,7 @@ new_board_type=
 new_hardware=
 board_name_changed=0
 skip_key="skip"
+config_none_key="config_none"
 
 #数组索引
 array_index=0
@@ -78,27 +79,30 @@ help(){
 		do
 			echo "                       {"
 			echo "                           hardware_ver=${hardwarevalue_array[$inner_index]}"
-			echo "                           config={"
 			hardwareconfig_get ${hardwareconfig_array[$inner_index]}
-			config_index=0
-			while :;
-			do
-				echo "                               {"
-				echo "                                   name=${configname_array[$config_index]}"
-				echo "                                   default=${configdefault_array[$config_index]}"
-				echo "                                   range=`echo ${configrange_array[$config_index]} | tr ':' ' '`"
-				if [ $(($config_index+1)) -eq ${#configname_array[*]} ]; then
-					echo "                               }"
-				else
-					echo "                               },"
-				fi
-				config_index=$(($config_index + 1))
-				if [ $config_index -ge ${#configname_array[*]} ]; then
-					break
-				fi
-			done
+			#当前硬件版本下存在配置选项
+			if [ ${#configname_array[*]} -ne 0 ]; then
+				echo "                           config={"
+				config_index=0
+				while :;
+				do
+					if [ $config_index -ge ${#configname_array[*]} ]; then
+						break
+					fi
+					echo "                               {"
+					echo "                                   name=${configname_array[$config_index]}"
+					echo "                                   default=${configdefault_array[$config_index]}"
+					echo "                                   range=`echo ${configrange_array[$config_index]} | tr ':' ' '`"
+					if [ $(($config_index+1)) -eq ${#configname_array[*]} ]; then
+						echo "                               }"
+					else
+						echo "                               },"
+					fi
+					config_index=$(($config_index + 1))
+				done
 
-			echo "                           }"
+				echo "                           }"
+			fi
 			if [ $(($inner_index+1)) -eq ${#hardwarevalue_array[*]} ]; then
 				echo "                       }"
 			else
@@ -220,6 +224,10 @@ hardwareconfig_get()
 	configrange_array=()
 
 	list=`echo "$1" | tr ':' ' '`
+	#判断硬件版本下面是否有配置
+	if [ "$list" = "$config_none_key" ]; then
+		return 1
+	fi
 	debug echo "------------------------------------------"
 
 	index=0
@@ -264,6 +272,8 @@ hardwareconfig_get()
 	debug echo "configname_array=${configname_array[*]}"
 	debug echo "configdefault_array=${configdefault_array[*]}"
 	debug echo "configrange_array=${configrange_array[*]}"
+
+	return 0
 }
 
 
@@ -435,6 +445,8 @@ if [ -z $assigned_hardware ]; then
 				continue
 			fi
 		done
+	else
+		new_hardware=$default_hardware
 	fi
 #通过形参设置 hardware
 else
@@ -472,6 +484,9 @@ if [ ! -z "$assigned_board_name" ]; then
 		is_find=0
 		while :;
 		do
+			if [ $index -ge ${#configname_array[*]} ]; then
+				break
+			fi
 			#配置名称数组
 			config_name=${configname_array[$index]}
 			if [ "$key" = "$config_name" ]; then
@@ -493,9 +508,6 @@ if [ ! -z "$assigned_board_name" ]; then
 				done
 			fi
 			index=$(($index + 1))
-			if [ $index -ge ${#configname_array[*]} ]; then
-				break
-			fi
 		done
 		if [ $is_find -ne 2 ]; then
 			if [ $is_find -eq 1 ]; then
@@ -530,60 +542,63 @@ if [ ! -z "$assigned_board_name" ]; then
 	fi
 else
 #手动设置配置
-	echo ""
-	echo "step3:choose configuration"
+    #当前硬件版本中存在配置选项
+	if [ ${#configname_array[*]} -ne 0 ]; then
+		echo ""
+		echo "step3:choose configuration"
 
-	index=0
-	while :;
-	do
-		config_name=${configname_array[$index]}
-		config_defalut_value=${configdefault_array[$index]}
-		#目前config_type未使用
-		config_type=${configtype_array[$index]}
-		echo "config: ${config_name}"
-		if [ $board_name_changed -eq 0 ]; then
-			eval config_name_value=\$${config_name}
-		else
-			config_name_value="${config_defalut_value}"
-		fi
-		if [ -z $config_name_value ]; then
-			echo "current value:null  use default value: ${config_defalut_value}"
-		else
-			echo "current value:$config_name_value"
-		fi
-		#echo "default value: ${config_defalut_value}"
-		config_list=`echo ${configrange_array[$index]} | tr ':' ' '`
-
-		select var in "$skip_key" ${config_list}; do
-			break
-		done
-
-		if [ ! -z $var ]; then
-			debug set -x
-			if [ $skip_key = $var ]; then
-				eval config_current_value=\$${config_name}
-				if [ -z $config_current_value ]; then
-					new_config=${config_defalut_value}
-				else
-					new_config=${config_current_value}
-				fi
+		index=0
+		while :;
+		do
+			config_name=${configname_array[$index]}
+			config_defalut_value=${configdefault_array[$index]}
+			#目前config_type未使用
+			config_type=${configtype_array[$index]}
+			echo "config: ${config_name}"
+			if [ $board_name_changed -eq 0 ]; then
+				eval config_name_value=\$${config_name}
 			else
-				new_config=$var
+				config_name_value="${config_defalut_value}"
 			fi
-			debug set +x
-			echo "new value: $new_config"
-			echo ""
-			new_config_array_add "${config_name}=${new_config}"
-		else
-			echo "input invalid! please input again!"
-			continue
-		fi
+			if [ -z $config_name_value ]; then
+				echo "current value:null  use default value: ${config_defalut_value}"
+			else
+				echo "current value:$config_name_value"
+			fi
+			#echo "default value: ${config_defalut_value}"
+			config_list=`echo ${configrange_array[$index]} | tr ':' ' '`
 
-		index=$(($index + 1))
-		if [ $index -ge ${#configname_array[*]} ]; then
-			break
-		fi
-	done
+			select var in "$skip_key" ${config_list}; do
+				break
+			done
+
+			if [ ! -z $var ]; then
+				debug set -x
+				if [ $skip_key = $var ]; then
+					eval config_current_value=\$${config_name}
+					if [ -z $config_current_value ]; then
+						new_config=${config_defalut_value}
+					else
+						new_config=${config_current_value}
+					fi
+				else
+					new_config=$var
+				fi
+				debug set +x
+				echo "new value: $new_config"
+				echo ""
+				new_config_array_add "${config_name}=${new_config}"
+			else
+				echo "input invalid! please input again!"
+				continue
+			fi
+
+			index=$(($index + 1))
+			if [ $index -ge ${#configname_array[*]} ]; then
+				break
+			fi
+		done
+	fi
 fi
 
 echo "-----------------new board define------------------"

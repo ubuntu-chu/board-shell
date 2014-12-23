@@ -37,13 +37,13 @@ ss_rfu_rru_hardware_1={
 ifu_ccu_hardware_1={
 	value=1
 	default=yes
-	config=lmk04806_clkin_def_10M:rf2052_def_200000000
+	config=config_none
 }
 
 rs_ccu_hardware_1={
 	value=1
 	default=yes
-	config=lmk04806_clkin_def_10M:rf2052_def_200000000
+	config=config_none
 }
 
 lmk04806_clkin={
@@ -87,10 +87,6 @@ rf2052_def_800000000={
 	default=800000000
 	define=rf2052_clk
 }
-
-#echo "(10M):30M" | cut -d: -f1|tr -d '()'
-#echo "(10M):30M" | awk -F: '{print $1}'|tr -d '()'
-
 
 
 
