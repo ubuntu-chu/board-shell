@@ -10,13 +10,6 @@ key_array=()
 #值数组
 value_array=()
 
-file_lines_proc()
-{
-	#去除首部 尾部的空格  以及=号前后的空格
-	#将空格替换为_
-	sed -i "s/^[[:space:]]*//;s/ *= */=/;s/[[:space:]]*$//;s/[[:space:]]/_/g" $1
-}
-
 generate_var_from_file()
 {
 	#键数组

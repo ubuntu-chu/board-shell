@@ -37,9 +37,9 @@ none	    none        lte           lpc3250      itl-none-none  network_none_none
 #此部分的内容会被直接写入到板载信息文件中
 #下面定义的区段 请不要更改！
 pre-define={
-	board_name=rfu_rru
-	board_type=1000
-	hardware=3
+	board_name=rs_ccu
+	board_type=2100
+	hardware=1
 }
 
 #proc_none：代表不产生/proc下相应目录与文件

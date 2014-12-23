@@ -110,13 +110,17 @@ if [ $? -eq 0 ]; then
 		index=0
 		while :;
 		do
-			config_array[$index]="--${key_array[$index]}=${value_array[$index]}"
+			#不传入board_type参数
+			if [ ! ${key_array[$index]} = "board_type" ]; then
+				config_array[$index]="--${key_array[$index]} ${value_array[$index]}"
+			fi
 			index=$(($index + 1))
 			if [ $index -ge ${#key_array[*]} ]; then
 				break
 			fi
 		done
-		$boarddefine_change_shell $config_array[*]
+		echo "$boarddefine_change_shell ${config_array[*]}"
+		$boarddefine_change_shell ${config_array[*]}
 	fi
 else
 	echo "rootfs update failed!"

@@ -100,6 +100,8 @@ rm -rf $APP_MOUNT_POINT/*
 
 echo "tar $tar_opt $PACKAGE_FILE -C /"
 tar $tar_opt $PACKAGE_FILE -C /
+echo "execute <vendor-sys-proc prepare> to create app link files"
+vendor-sys-proc prepare
 
 if [ $? -eq 0 ]; then
 	removepackage

@@ -642,4 +642,6 @@ sed -i "/^"${PREV_DEFINE_KEY}"={/,/^\}/ d\
 rm -rf $temp_file
 rm -rf $boardname_file
 
+echo "execute </etc/board/cpu-identify.sh start> to update boardinfo file"
+/etc/board/cpu-identify.sh start > /dev/null
 

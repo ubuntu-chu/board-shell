@@ -14,13 +14,6 @@ SYS_CLASS_GPIO_FILE_ARRAY=()
 BOARD_ID=$BOARD_ID_NONE_TEXT
 SYS_REGS_EXIST=0
 
-file_lines_proc()
-{
-	#去除首部 尾部的空格  以及=号前后的空格
-	#将空格替换为_
-	sed -i "s/^[[:space:]]*//;s/ *= */=/;s/[[:space:]]*$//;s/[[:space:]]/_/g" $1
-}
-
 app_define_files_add()
 {
 	#获取应用中定义的priv文件

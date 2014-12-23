@@ -201,3 +201,10 @@ section_content_get()
 		| awk '{print $0 >> "'"${3}"'"}'
 }
 
+file_lines_proc()
+{
+	#去除首部 尾部的空格  以及=号前后的空格
+	#将空格替换为_
+	sed -i "s/^[[:space:]]*//;s/ *= */=/;s/[[:space:]]*$//;s/[[:space:]]/_/g" $1
+}
+
