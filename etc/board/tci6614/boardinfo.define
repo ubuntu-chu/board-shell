@@ -40,10 +40,14 @@ none		3           lte           tci6614      itl-mesh       network_mesh        
 #若value的内容中含有空格 则空格会被替换为_
 proc_bbu={
 	board_name=itl-bbu
+	board_id=${BOARD_ID}
+	cpu_id=${CPU_ID}
 }
 
 proc_mesh={
 	board_name=itl-mesh
+	board_id=${BOARD_ID}
+	cpu_id=${CPU_ID}
 }
 
 priv_bbu={

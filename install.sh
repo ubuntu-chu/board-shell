@@ -13,7 +13,7 @@ BIN_SUFFIX="bin"
 SBIN_SUFFIX="sbin"
 PRIVATE_SUFFIX="private"
 
-rootfs_common_path="/home/chum/work/lte/rootfs-common"
+rootfs_common_path="/home/chum/work/lte/board-shell"
 ETC_BOARD_SRC_PATH="$rootfs_common_path/$ETC_BOARD_SUFFIX/"
 ETC_RCD_SRC_PATH="$rootfs_common_path/$ETC_RCD_SUFFIX/"
 ETC_BOARD_PRIVATE_SRC_PATH="$rootfs_common_path/$ETC_BOARD_SUFFIX/$PRIVATE_SUFFIX"
