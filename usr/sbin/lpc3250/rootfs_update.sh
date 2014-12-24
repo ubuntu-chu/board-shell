@@ -26,6 +26,7 @@ PACKAGE_FILE=$DEF_PACKAGE_FILE
 DEL_PACKAGE_FILE=1
 tar_opt="zxvf"
 have_valid_boarddefine=0
+have_boarddefine_utility_file=0
 boarddefine_change_shell="/etc/board/boarddefine-change.sh"
 boarddefine_utility_file="/etc/board/boarddefine-utility.sh"
 
@@ -80,19 +81,19 @@ fi
 killapp
 
 if [ ! -e $boarddefine_utility_file ]; then
-	echo "$boarddefine_utility_file  do not exist!"
-	exit 1
-fi
-. $boarddefine_utility_file
-
-#获取当前板载定义配置
-generate_var_from_file "${PREV_DEFINE_KEY}" "$BOARD_INFO_SRC_FILE"
-
-if [ ${#key_array[*]} -eq 0 ]; then
-	echo "$BOARD_INFO_SRC_FILE file do not have a valid board define! you must manual set baord define info by run $boarddefine_change_shell!"
-	have_valid_boarddefine=0
+	have_boarddefine_utility_file=0
 else
-	have_valid_boarddefine=1
+	. $boarddefine_utility_file
+
+	#获取当前板载定义配置
+	generate_var_from_file "${PREV_DEFINE_KEY}" "$BOARD_INFO_SRC_FILE"
+
+	have_boarddefine_utility_file=1
+	if [ ${#key_array[*]} -eq 0 ]; then
+		have_valid_boarddefine=0
+	else
+		have_valid_boarddefine=1
+	fi
 fi
 
 echo "tar $tar_opt $PACKAGE_FILE -C /"
@@ -121,6 +122,13 @@ if [ $? -eq 0 ]; then
 		done
 		echo "$boarddefine_change_shell ${config_array[*]}"
 		$boarddefine_change_shell ${config_array[*]}
+	else
+		if [ $have_boarddefine_utility_file -eq 0 ]; then
+			echo "$boarddefine_utility_file  do not exist!"
+			echo "you must manual set baord define info by run $boarddefine_change_shell!"
+		else
+			echo "$BOARD_INFO_SRC_FILE file do not have a valid board define! you must manual set baord define info by run $boarddefine_change_shell!"
+		fi
 	fi
 else
 	echo "rootfs update failed!"

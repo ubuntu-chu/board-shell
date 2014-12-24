@@ -195,7 +195,6 @@ case "$1" in
 esac
 
 cp $rootfs_common_path/usr/sbin/lpc3250/rootfs_update.sh /opt/local/
-cp $rootfs_common_path/usr/sbin/lpc3250/rootfs_update.sh /opt/tftp/stable
 
 exit 0
 
