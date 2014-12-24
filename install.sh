@@ -167,6 +167,12 @@ if [ $# -ne 1 ]; then
 	help
 fi
 
+#修改board-shell脚本
+version="v1.0.`svn info | sed -n 's,^版本: \(.*\),\1,p'`"
+version_key="VERSION"
+rcs_file=etc/board/rcS
+sed -i "s/.*"${version_key}".*/"${version_key}"=\""${version}"\"/" $rcs_file
+
 case "$1" in
 	$LPC3250_KEY)
 		install_lpc3250
