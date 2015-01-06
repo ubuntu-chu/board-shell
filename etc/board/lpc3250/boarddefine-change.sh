@@ -50,6 +50,8 @@ param_board_name="--board_name"
 param_hardware="--hardware"
 param_debug="--debug"
 param_help="--help"
+#info关键字 用于列出所有板名 和 对应的硬件版本号
+param_info="--info"
 param_current="--current"
 #参数值数组
 paramvalue_array=()
@@ -59,6 +61,7 @@ paramkey_array=()
 help(){
 	echo "Usage            : $0 [$param_help|$param_current|$param_debug|$param_board_name|$param_hardware]"
 	echo "Param $param_help: show help"
+	echo "Param $param_info: show board name and relevant hardware list"
 	echo "Param $param_current: show current board define"
 	echo "Param $param_debug: enable debug"
 	echo "Param $param_board_name : ${boardname_array[*]}"
@@ -117,6 +120,24 @@ help(){
 		echo ""
 		help_index=$(($help_index+1))
 		if [ $help_index -ge ${#boardname_array[*]} ]; then
+			break
+		fi
+	done
+	exit 1
+}
+
+info(){
+	echo "$param_board_name : ${boardname_array[*]}"
+
+	info_index=0
+	#遍历获取硬件信息
+	while :;
+	do
+		#获取此board_name所对应的硬件版本信息及配置信息
+		hardwareinfo_get "${hardware_array[$info_index]}"
+		echo "$param_hardware : ${boardname_array[$info_index]}-${hardwarevalue_array[*]}"
+		info_index=$(($info_index+1))
+		if [ $info_index -ge ${#boardname_array[*]} ]; then
 			break
 		fi
 	done
@@ -309,6 +330,9 @@ do
 			;;
 		$param_help)
 			help
+			;;
+		$param_info)
+			info
 			;;
 		$param_board_name)
 			assigned_board_name="$2"

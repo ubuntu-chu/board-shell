@@ -36,6 +36,9 @@ FPGA_OPT_REPOSITORY_PATH=/opt/repository/lte-ccu
 FPGA_NAME=dpd_module.bit
 FPGA_PARAM="fpga_copy"
 
+#版本前缀
+ver_prefix="V1.1."
+
 APP_REPOSITORY_DIR=application/lpc3250
 APP_REPOSITORY_ROOTFS_DIR=application/lpc3250_rootfs
 CCU_BIN_SRC_PATH=$APP_REPOSITORY_ROOTFS_DIR/$BIN_PATH/CCU
@@ -44,47 +47,95 @@ RRU_BIN_SRC_PATH=$APP_REPOSITORY_ROOTFS_DIR/$BIN_PATH/RRU
 RRU_ETC_SRC_PATH=$APP_REPOSITORY_ROOTFS_DIR/$ETC_PATH/RRU
 LIB_SRC_PATH=$APP_REPOSITORY_ROOTFS_DIR/$LIB_PATH/
 
+#boarddefine-change.sh 输出结果暂存文件
+BOARDDEFINE_INFO_FILE=boarddefine.info
+BOARDDEFINE_SHELL=/etc/board/boarddefine-change.sh
+
+#当前路径
+NOW_PATH=`pwd`
+
 DEBUG=0
+TEST=0
 
 
 BOARD_LIST=
 declare -A HARDWARE='()'
 
+#获取boarddefine-change.sh --info输出结果
+echo "$SUDO_PASSWD" | sudo -S $BOARDDEFINE_SHELL --info > $BOARDDEFINE_INFO_FILE
+
+#功能： 获取板名列表
+#参数： ccu 或 rru
+boardlist_get()
+{
+	#查找以$1为结尾的字符串
+	BOARD_LIST=`sed -n '/^--board_name/ p' $BOARDDEFINE_INFO_FILE | awk '{for(i=1;i<=NF;i++){if($i~/'${1}'$/)print $i}}'|tr '\n' ' '`
+}
+
+#功能： 获取hardware列表
+#参数： board name
+hardwarelist_get()
+{
+	#echo $1
+	#sed -n '/^--hardware.*: \+'${1}'/ p' $BOARDDEFINE_INFO_FILE
+	#查找含有$1的字符串
+	BOARD_HARDWARE_LIST=`sed -n '/^--hardware.*: \+'${1}'/ p' $BOARDDEFINE_INFO_FILE | awk -F ':' '{print $2}' | awk -F '-' '{print $2}'`
+}
+
 applicationinfo_write()
 {
+	#进入到程序顶层目录  注意：rru 与 ccu的顶层目录不同
+	echo "applicationinfo_write enter dir:$1"
+	cd $1
+	#获取svn版本相关信息
+	app_package_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
+	app_modify_time=`svn info | sed -n 's,^最后修改的时间: \(.*\)+\(.*\),\1,p'`
+	#去除app的编译时间
+	echo "applicationinfo_write exit dir:$1"
+	cd $NOW_PATH
+
 	#更新应用程序信息
-	sed '1d;s/\\n//g;s/\\t//g;s/\\//g;s/^[[:space:]]*//g;s/"//g' $1 > $TMP_FILE
-	
-	while read line
-	do
-		#echo   "$line" 
-		case "$line" in
-			*"VERSION"* )
-				read value
-				sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${APP_PACKAGE_VERSION_KEY}".*/    echo \""${APP_PACKAGE_VERSION_KEY}"="${value}"\" >> \$1/" $2
-				echo "application_package_version=$value"
-			;;
-			*"MODIFY TIME"* )
-				read value
-				sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${APP_PACKAGE_MODIFY_TIME_KEY}".*/    echo \""${APP_PACKAGE_MODIFY_TIME_KEY}"=""${value}""\" >> \$1/" $2
-				echo "application_package_modify_time=$value"
-			;;
-			*"BUILD TIME"* )
-				read value
-				sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${APP_PACKAGE_BUILD_TIME_KEY}".*/    echo \""${APP_PACKAGE_BUILD_TIME_KEY}"=""${value}""\" >> \$1/" $2
-				echo "application_package_build_time=$value"
-			;;
-			*)
-				#echo "invalid key"
-				#exit 1
-		esac
+	sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${APP_PACKAGE_VERSION_KEY}".*/    echo \""${APP_PACKAGE_VERSION_KEY}"="${ver_prefix}""${app_package_ver}"\" >> \$1/" $2
+	echo "$APP_PACKAGE_VERSION_KEY=${ver_prefix}${app_package_ver}"
 
-	done  < $TMP_FILE
+	sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${APP_PACKAGE_MODIFY_TIME_KEY}".*/    echo \""${APP_PACKAGE_MODIFY_TIME_KEY}"=""${app_modify_time}""\" >> \$1/" $2
+	echo "$APP_PACKAGE_MODIFY_TIME_KEY=$app_modify_time"
 
-	rm -rf $TMP_FILE
+	##更新应用程序信息
+	#sed '1d;s/\\n//g;s/\\t//g;s/\\//g;s/^[[:space:]]*//g;s/"//g' $1 > $TMP_FILE
+	#echo "application info file: $2"
+	#
+	#while read line
+	#do
+	#	#echo   "$line" 
+	#	case "$line" in
+	#		*"VERSION"* )
+	#			read value
+	#			sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${APP_PACKAGE_VERSION_KEY}".*/    echo \""${APP_PACKAGE_VERSION_KEY}"="${value}"\" >> \$1/" $2
+	#			echo "application_package_version=$value"
+	#		;;
+	#		*"MODIFY TIME"* )
+	#			read value
+	#			sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${APP_PACKAGE_MODIFY_TIME_KEY}".*/    echo \""${APP_PACKAGE_MODIFY_TIME_KEY}"=""${value}""\" >> \$1/" $2
+	#			echo "application_package_modify_time=$value"
+	#		;;
+	#		*"BUILD TIME"* )
+	#			read value
+	#			sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${APP_PACKAGE_BUILD_TIME_KEY}".*/    echo \""${APP_PACKAGE_BUILD_TIME_KEY}"=""${value}""\" >> \$1/" $2
+	#			echo "application_package_build_time=$value"
+	#		;;
+	#		*)
+	#			#echo "invalid key"
+	#			#exit 1
+	#	esac
+
+	#done  < $TMP_FILE
+
+	#rm -rf $TMP_FILE
 
 	BUILD_TIME=`date +"%F %T"`
 	sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${BUILD_TIME_KEY}".*/    echo \""${BUILD_TIME_KEY}"=""${BUILD_TIME}""\" >> \$1/" $2
+
 }
 
 boardfiles_prepare()
@@ -128,23 +179,29 @@ boardfiles_prepare()
 
 ccu_prepare()
 {
-	#APP_DIR=history/opt-ccu/
-	APP_DIR=opt-ccu/
+	[ $TEST -eq 1 ] && APP_DIR=history/opt-ccu/ || APP_DIR=opt-ccu/
 	FPGA_OPT_REPOSITORY_PATH=/opt/repository/lte-ccu
 	FPGA_NAME=dpd_module.bit
+	APP_PROC_FILE=$APP_DIR/opt/itl/sbin/itl-sys-proc
+	HARDWARE='()'
 
-	BOARD_LIST="ifu_ccu rs_ccu"
-	#多个值之间要以空格分隔 并加上双引号
-	HARDWARE[ifu_ccu]="1" 
-	HARDWARE[rs_ccu]="1"
+	#板名列表
+	boardlist_get ccu
+	echo "board list = $BOARD_LIST"
+	#获取hardware列表
+	for i in $BOARD_LIST;
+	do
+		hardwarelist_get $i		
+		HARDWARE[$i]="$BOARD_HARDWARE_LIST"
+		echo "$i hardware list  = ${HARDWARE[$i]}"
+	done
 }
 
 build_ccu()
 {
 	PARTION_NAME=app-ccu.img
 	APP_TAR_NAME=app-ccu.tar.gz
-	APP_PROC_FILE=$APP_DIR/opt/itl/sbin/itl-sys-proc
-	APP_VERSION_FILE=$APP_REPOSITORY_DIR/version.h
+	APP_SRC_DIR=$APP_REPOSITORY_DIR/CCU/
 
 	#准备工作
 	ccu_prepare
@@ -168,30 +225,35 @@ build_ccu()
 	[ $DEBUG -eq 0 ] && cp -ar $CCU_BIN_SRC_PATH/* $APP_DIR/$BIN_PATH/
 
 	#更新应用程序信息
-	applicationinfo_write $APP_VERSION_FILE $APP_PROC_FILE
+	applicationinfo_write $APP_SRC_DIR $APP_PROC_FILE
 	[ $DEBUG -eq 0 ] && ./_make_app.sh $APP_DIR $PARTION_NAME $PARTION_SIZE $APP_TAR_NAME 
 }
 
 rru_prepare()
 {
-	#APP_DIR=history/opt-rru/
-	APP_DIR=opt-rru/
+	[ $TEST -eq 1 ] && APP_DIR=history/opt-rru/ || APP_DIR=opt-rru/
 	FPGA_OPT_REPOSITORY_PATH=/opt/repository/lte-rru
 	FPGA_NAME=dpd_module.bit
+	APP_PROC_FILE=$APP_DIR/opt/itl/sbin/itl-sys-proc
+	HARDWARE='()'
 
-	BOARD_LIST="rfu_rru cs_rfu_rru ss_rfu_rru"
-	#多个值之间要以空格分隔 并加上双引号
-	HARDWARE[rfu_rru]="3" 
-	HARDWARE[cs_rfu_rru]="1"
-	HARDWARE[ss_rfu_rru]="1"
+	#板名列表
+	boardlist_get rru
+	echo "board list = $BOARD_LIST"
+	#获取hardware列表
+	for i in $BOARD_LIST;
+	do
+		hardwarelist_get $i		
+		HARDWARE[$i]="$BOARD_HARDWARE_LIST"
+		echo "$i hardware list  = ${HARDWARE[$i]}"
+	done
 }
 
 build_rru()
 {
 	PARTION_NAME=app-rru.img
 	APP_TAR_NAME=app-rru.tar.gz
-	APP_PROC_FILE=$APP_DIR/opt/itl/sbin/itl-sys-proc
-	APP_VERSION_FILE=$APP_REPOSITORY_DIR/version.h
+	APP_SRC_DIR=$APP_REPOSITORY_DIR/RRU/
 
 	#准备工作
 	rru_prepare
@@ -215,7 +277,7 @@ build_rru()
 	[ $DEBUG -eq 0 ] && cp -ar $RRU_BIN_SRC_PATH/* $APP_DIR/$BIN_PATH/
 
 	#更新应用程序信息
-	applicationinfo_write $APP_VERSION_FILE $APP_PROC_FILE
+	applicationinfo_write $APP_SRC_DIR $APP_PROC_FILE
 	[ $DEBUG -eq 0 ] && ./_make_app.sh $APP_DIR $PARTION_NAME $PARTION_SIZE $APP_TAR_NAME 
 }
 

@@ -1,7 +1,8 @@
 #!/bin/sh
 
+#此脚本废弃 
 
-rootfs_common_path="/home/chum/work/lte/rootfs-common"
+rootfs_common_path="/home/chum/work/lte/board-shell"
 
 cpu_name_lpc3250=lpc3250
 cpu_name_tci6614=tci6614

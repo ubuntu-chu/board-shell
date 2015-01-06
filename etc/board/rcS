@@ -6,7 +6,7 @@
 . /etc/board/rcS.define
 
 #下面的配置为通用配置部分   注意要求应用程序的文件夹架构必须一致！
-VERSION="v1.0.141"
+VERSION="v1.0.144"
 
 #默认PATH文件定义
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:$ETC_ENTRY_SHELL_PATH:/etc/board

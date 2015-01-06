@@ -62,7 +62,7 @@ if [ $? -eq 0 ]; then
 ftype=`file "$FLASH_FILE"`
 
 case "$ftype" in
-	*"Linux jffs2 filesystem"*)
+	*"Linux jffs2 filesystem"*|*"HIT archive data"*)
 		echo "$ftype"
 		;;
 

@@ -2,7 +2,8 @@
 
 LPC3250_KEY="lpc3250"
 TCI6614_KEY="tci6614"
-ALL_KEY="all"
+ALL_KEY="all-cpu"
+PACK_SHELL="pack-shell"
 
 
 ETC_BOARD_SUFFIX="etc/board"
@@ -34,8 +35,10 @@ rootfs_update_tar_name="itl-lpc3250-rootfs-update.tar.gz"
 cpu_name_lpc3250=lpc3250
 cpu_name_tci6614=tci6614
 
+TCI6614_DEST_PATH="/home/chum/work/lte"
+#用于测试
 #TCI6614_ROOTFS_DEST_PATH="/home/chum/test/tci6614"
-TCI6614_ROOTFS_DEST_PATH="/home/chum/work/lte/rootfs"
+TCI6614_ROOTFS_DEST_PATH="$TCI6614_DEST_PATH/rootfs"
 TCI6614_ETC_BOARD_DEST_PATH="$TCI6614_ROOTFS_DEST_PATH/$ETC_BOARD_SUFFIX"
 TCI6614_ETC_BOARD_PRIVATE_DEST_PATH="$TCI6614_ROOTFS_DEST_PATH/$ETC_BOARD_SUFFIX/$PRIVATE_SUFFIX"
 TCI6614_USR_SBIN_DEST_PATH="$TCI6614_ROOTFS_DEST_PATH/$USR_SBIN_SUFFIX"
@@ -43,8 +46,10 @@ TCI6614_USR_SHARE_DEST_PATH="$TCI6614_ROOTFS_DEST_PATH/$USR_SHARE_SUFFIX"
 TCI6614_BIN_DEST_PATH="$TCI6614_ROOTFS_DEST_PATH/$BIN_SUFFIX"
 TCI6614_SBIN_DEST_PATH="$TCI6614_ROOTFS_DEST_PATH/$SBIN_SUFFIX"
 
+LPC3250_DEST_PATH="/home/chum/work/lte/lpc3250"
+#用于测试
 #LPC3250_ROOTFS_DEST_PATH="/home/chum/test/lpc3250"
-LPC3250_ROOTFS_DEST_PATH="/home/chum/work/lte/lpc3250/rootfs"
+LPC3250_ROOTFS_DEST_PATH="$LPC3250_DEST_PATH/rootfs"
 LPC3250_ETC_BOARD_DEST_PATH="$LPC3250_ROOTFS_DEST_PATH/$ETC_BOARD_SUFFIX"
 LPC3250_ETC_BOARD_PRIVATE_DEST_PATH="$LPC3250_ROOTFS_DEST_PATH/$ETC_BOARD_SUFFIX/$PRIVATE_SUFFIX"
 LPC3250_USR_SBIN_DEST_PATH="$LPC3250_ROOTFS_DEST_PATH/$USR_SBIN_SUFFIX"
@@ -87,7 +92,7 @@ install_usr_share()
 }
 
 help(){
-	echo "Usage                 : $0 <$LPC3250_KEY|$TCI6614_KEY|$ALL_KEY>"
+	echo "Usage                 : $0 <$LPC3250_KEY|$TCI6614_KEY|$ALL_KEY|$PACK_SHELL>"
 	exit 1
 }
 
@@ -149,6 +154,8 @@ install_lpc3250()
 	install_files $BIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_BIN_DEST_PATH
 	install_files $SBIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_SBIN_DEST_PATH
 	install_usr_share $USR_SHARE_SRC_PATH $LPC3250_USR_SHARE_DEST_PATH
+
+	echo "$SUDO_PASSWD" | sudo -S cp -r $LPC3250_ETC_BOARD_DEST_PATH/* /etc/board/
 }
 
 install_tci6614()
@@ -188,7 +195,11 @@ case "$1" in
 		install_rootfs_update
 		install_tci6614
 		;;
-
+	$PACK_SHELL)
+		#拷贝打包脚本到相应的目录中
+		cp $rootfs_common_path/pack-shell/$cpu_name_lpc3250/*  $LPC3250_DEST_PATH/
+		cp $rootfs_common_path/pack-shell/$cpu_name_tci6614/*  $TCI6614_DEST_PATH/
+		;;
 	*)
 		help
 		;;
