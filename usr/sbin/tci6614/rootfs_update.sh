@@ -21,14 +21,10 @@ removepackage()
 	fi
 }
 
-DEF_PACKAGE_FILE=itl-lpc3250-rootfs-update.tar.gz
+DEF_PACKAGE_FILE=itl-tci6614-rootfs-update.tar.gz
 PACKAGE_FILE=$DEF_PACKAGE_FILE
 DEL_PACKAGE_FILE=1
 tar_opt="zxvf"
-have_valid_boarddefine=0
-have_boarddefine_utility_file=0
-boarddefine_change_shell="/etc/board/boarddefine-change.sh"
-boarddefine_utility_file="/etc/board/boarddefine-utility.sh"
 
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	help
@@ -80,58 +76,14 @@ fi
 
 killapp
 
-if [ ! -e $boarddefine_utility_file ]; then
-	have_boarddefine_utility_file=0
-else
-	. $boarddefine_utility_file
-
-	#获取当前板载定义配置
-	generate_var_from_file "${PREV_DEFINE_KEY}" "$BOARD_INFO_SRC_FILE"
-
-	have_boarddefine_utility_file=1
-	if [ ${#key_array[*]} -eq 0 ]; then
-		have_valid_boarddefine=0
-	else
-		have_valid_boarddefine=1
-	fi
-fi
-
 echo "rm -rf /etc/board"
 rm -rf /etc/board
 echo "tar $tar_opt $PACKAGE_FILE -C /"
 tar $tar_opt $PACKAGE_FILE -C /
 
 if [ $? -eq 0 ]; then
-	echo "run /etc/board/customize.sh"
-	/etc/board/customize.sh
-	echo "you can run /etc/board/validate-boardinfo.sh to view new boardinfo"
 	removepackage
 	echo "rootfs update success!"
-	if [ $have_valid_boarddefine -eq 1 ]; then
-		echo "recover previous board define info"
-		config_array=()
-		index=0
-		while :;
-		do
-			#不传入board_type参数
-			if [ ! ${key_array[$index]} = "board_type" ]; then
-				config_array[$index]="--${key_array[$index]} ${value_array[$index]}"
-			fi
-			index=$(($index + 1))
-			if [ $index -ge ${#key_array[*]} ]; then
-				break
-			fi
-		done
-		echo "$boarddefine_change_shell ${config_array[*]}"
-		$boarddefine_change_shell ${config_array[*]}
-	else
-		if [ $have_boarddefine_utility_file -eq 0 ]; then
-			echo "$boarddefine_utility_file  do not exist!"
-			echo "you must manual set baord define info by run $boarddefine_change_shell!"
-		else
-			echo "$BOARD_INFO_SRC_FILE file do not have a valid board define! you must manual set baord define info by run $boarddefine_change_shell!"
-		fi
-	fi
 else
 	echo "rootfs update failed!"
 fi

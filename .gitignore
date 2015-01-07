@@ -78,7 +78,9 @@ ncscope.*
 vmlinux.o
 
 rootfs_update_lpc3250/
+rootfs_update_tci6614/
 itl-lpc3250-rootfs-update.tar.gz
+itl-tci6614-rootfs-update.tar.gz
 
 etc/board/lpc3250/boardname
 

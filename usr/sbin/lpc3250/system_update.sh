@@ -11,6 +11,7 @@ STEP_1="step1"
 STEP_2="step2"
 STEP_3="step3"
 STEP_4="step4"
+FAST="fast"
 
 DEFAULT_ROOTFS_UPDATE_PACKAGE="itl-lpc3250-rootfs-update.tar.gz"
 DEFAULT_ROOTFS_PACKAGE="itl-lpc3250-rootfs.img"
@@ -37,7 +38,7 @@ help(){
 	echo "Param server_ip       : tftp server ip address"
 	echo "Param board_class     : <$CCU_KEY|$RRU_KEY>"
 	#echo "Param step            : <$STEP_1|$STEP_2|$STEP_3|$STEP_4> $STEP_1-$STEP_3 for rootfs, $STEP_4 only for recover-rootfs"
-	echo "Param step            : <$STEP_0|$STEP_1|$STEP_2|$STEP_3|$STEP_4> $STEP_0-$STEP_3 for rootfs, $STEP_4 only for recover-rootfs"
+	echo "Param step            : <$STEP_0|$STEP_1|$STEP_2|$STEP_3|$STEP_4|$FAST> $STEP_0-$STEP_3 for rootfs, $STEP_4 only for recover-rootfs, $FAST will update all except rootfs"
 	exit 1
 }
 
@@ -144,6 +145,19 @@ case $3 in
 		boardinfo_define_copy  $FLASH_ROOTFS_PARTION_NAME
 		#重启进入到正常模式 此时使用根文件系统
 		execute_cmd normal_mode_restart.sh
+		;;
+	$FAST)
+		#升级应用程序包
+		execute_cmd app_install_upgrade.sh $TFTP_SERVER_IP $APP_PACKAGE
+		#升级内核
+		execute_cmd kernel_partion_flash.sh $TFTP_SERVER_IP $DEFAULT_KERNEL_PACKAGE
+		#升级bootloader
+		execute_cmd bootloader_partion_flash.sh $TFTP_SERVER_IP $DEFAULT_BOOTLOADER_3IN1_PACKAGE
+		#重烧写恢复所用根文件系统  原因在于恢复所用根文件系统所有使用的uboot变量在新的uboot变量中可能已经不存在了 所以导致恢复所用根文件系统无法启动
+		#TO DO:恢复所用根文件系统烧写完成后 应将其挂载到目录下 依据当前板载定义配置修改其下的/etc/board/boardinfo.define文件
+		execute_cmd recover_rootfs_partion_flash.sh $TFTP_SERVER_IP $DEFAULT_RECOVER_ROOTFS_PACKAGE
+		#拷贝boardinfo.define文件
+		boardinfo_define_copy  $FLASH_RECOVER_ROOTFS_PARTION_NAME
 		;;
 	*)
 		help

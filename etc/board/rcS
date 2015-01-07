@@ -23,6 +23,8 @@ export KERNEL_PARTION_NAME=kernel
 GPIO_CLASS_PATH=/sys/class/gpio
 #/proc路径
 PROC_APP_FILE_PATH=/proc/$COMPANY
+#内核版本文件
+PROC_KERN_VER_FILE=/proc/kernversion-itl
 #应用程序路径
 APP_ENTRY_PATH=/opt/$COMPANY
 

@@ -7,6 +7,12 @@ help(){
 	exit 1
 }
 
+killapp(){
+	vendor-sys-proc stop
+
+	sleep 2
+}
+
 remove_flashfile()
 {
 	if [ $DEL_FLASH_FILE -eq 1 ]; then
@@ -15,14 +21,14 @@ remove_flashfile()
 	fi
 }
 
-DEF_FLASH_FILE=itl-rootfs.img
+DEF_FLASH_FILE=itl-app.img
 FLASH_FILE=$DEF_FLASH_FILE
 DEL_FLASH_FILE=1
-#分区在内核中的名字 用于删除 烧写分区
-FLASH_PARTION_NAME="rootfs-recover"
-#分区挂载的名字 用于判断分区是否已经挂载    
-#大部分情况下两个名字相同 若使用ubi文件系统 则两者不同
-FLASH_PARTION_MOUNT_NAME=$FLASH_PARTION_NAME
+if [ -z $APP_MOUNT_POINT ]; then
+	FLASH_MTD_PARTION_NAME=app
+else
+	FLASH_MTD_PARTION_NAME=$APP_PARTION_NAME
+fi
 
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	help
@@ -32,17 +38,10 @@ if [ $# -eq 2 ]; then
 	FLASH_FILE=$2
 fi
 
-#检查rootfs是否已经挂载  
-cat /proc/mounts|awk '{print $1}'|grep "$FLASH_PARTION_MOUNT_NAME" > /dev/null
-if [ $? -eq 0 ]; then
-	echo "$FLASH_PARTION_MOUNT_NAME mounted, can not flash mtd partion<$FLASH_PARTION_NAME>"
-	exit 3
-fi
-
 cd $FLASH_DIR
 echo "now we are in flash dir:$FLASH_DIR"
 echo "flash file             :$FLASH_FILE"
-echo "flash mtd partion      :$FLASH_PARTION_NAME"
+echo "flash mtd partion      :$FLASH_MTD_PARTION_NAME"
 
 TFTP_SERVER_IP=$1
 
@@ -63,7 +62,7 @@ if [ $? -eq 0 ]; then
 ftype=`file "$FLASH_FILE"`
 
 case "$ftype" in
-	*"Linux jffs2 filesystem"*|*"HIT archive data"*)
+	*"Linux jffs2 filesystem"*)
 		echo "$ftype"
 		;;
 
@@ -75,7 +74,20 @@ case "$ftype" in
 esac
 fi
 
-partion_flash.sh $FLASH_PARTION_NAME $FLASH_FILE
+killapp
+
+#check /opt 
+cat /proc/mounts|awk '{print $2}'|grep "$APP_MOUNT_POINT" > /dev/null
+if [ $? -eq 0 ]; then
+	echo "app mounte to $APP_MOUNT_POINT, now umount $APP_MOUNT_POINT first"
+	umount_app_mtd_partion.sh
+	if [ $? -ne 0 ]; then
+		echo "umount_app_mtd_partion failed! please check your app"
+		exit 5
+	fi
+fi
+
+partion_flash.sh $FLASH_MTD_PARTION_NAME $FLASH_FILE
 
 if [ $? -eq 0 ]; then
 	remove_flashfile

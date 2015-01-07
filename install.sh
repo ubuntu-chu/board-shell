@@ -8,6 +8,7 @@ PACK_SHELL="pack-shell"
 
 ETC_BOARD_SUFFIX="etc/board"
 ETC_RCD_SUFFIX="etc/rc.d"
+ETC_INITD_SUFFIX="etc/init.d"
 USR_SBIN_SUFFIX="usr/sbin"
 USR_SHARE_SUFFIX="usr/share"
 BIN_SUFFIX="bin"
@@ -96,6 +97,64 @@ help(){
 	exit 1
 }
 
+#此函数要放在install_rootfs_update函数之后运行
+install_rootfs_update_tci6614()
+{
+	rootfs_update_path="$rootfs_common_path/rootfs_update_tci6614"
+	rootfs_update_path_etc_board="$rootfs_update_path/$ETC_BOARD_SUFFIX"
+	rootfs_update_path_etc_board_private="$rootfs_update_path/$ETC_BOARD_SUFFIX/$PRIVATE_SUFFIX"
+	rootfs_update_path_usr_sbin="$rootfs_update_path/$USR_SBIN_SUFFIX"
+	rootfs_update_path_usr_share="$rootfs_update_path/$USR_SHARE_SUFFIX"
+	rootfs_update_path_bin="$rootfs_update_path/$BIN_SUFFIX"
+	rootfs_update_path_sbin="$rootfs_update_path/$SBIN_SUFFIX"
+	rootfs_update_tar_name="itl-tci6614-rootfs-update.tar.gz"
+
+	rm -rf $rootfs_update_path
+	mkdir -p $rootfs_update_path_bin
+	mkdir -p $rootfs_update_path_sbin
+	mkdir -p $rootfs_update_path_etc_board
+	mkdir -p $rootfs_update_path_etc_board_private
+	mkdir -p $rootfs_update_path_usr_sbin
+	mkdir -p $rootfs_update_path_usr_share/file
+	mkdir -p $rootfs_update_path_usr_share/misc
+	mkdir -p $rootfs_update_path_usr_share/file/maigc
+
+	mkdir -p $rootfs_update_path/$ETC_INITD_SUFFIX
+
+	install_files $ETC_BOARD_SRC_PATH $cpu_name_tci6614 $rootfs_update_path_etc_board
+	install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_tci6614 $rootfs_update_path_etc_board_private
+	install_files $USR_SBIN_SRC_PATH $cpu_name_tci6614 $rootfs_update_path_usr_sbin
+	install_files $BIN_SRC_PATH $cpu_name_tci6614 $rootfs_update_path_bin
+	install_files $SBIN_SRC_PATH $cpu_name_tci6614 $rootfs_update_path_sbin
+	install_usr_share $USR_SHARE_SRC_PATH $rootfs_update_path_usr_share
+
+	cp $rootfs_common_path/etc/$cpu_name_tci6614/profile $rootfs_update_path/etc/
+	cp $rootfs_common_path/etc/$cpu_name_tci6614/inittab $rootfs_update_path/etc/
+	cp $rootfs_common_path/etc/$cpu_name_tci6614/fstab $rootfs_update_path/etc/
+	cp $rootfs_common_path/etc/$cpu_name_tci6614/init.d/rc $rootfs_update_path/$ETC_INITD_SUFFIX
+
+	#更新build_time
+	boardinfo_define_file="boardinfo.define"
+	BUILD_TIME_KEY="rootfs_img_build_time="
+	BUILD_TIME=`date +"%F_%T"`
+	echo "$SUDO_PASSWD" | sudo -S sed -i -e "s/^$BUILD_TIME_KEY.*$/$BUILD_TIME_KEY$BUILD_TIME/g" $rootfs_update_path_etc_board/$boardinfo_define_file
+	#更新根文件系统中的文件
+	cp $rootfs_update_path_etc_board/$boardinfo_define_file $TCI6614_ETC_BOARD_DEST_PATH/$boardinfo_define_file
+
+	cd $rootfs_update_path
+	tar zcf $rootfs_update_tar_name ./*
+	cd ..
+	mv $rootfs_update_path/$rootfs_update_tar_name .
+
+	if [ -z ${TFTP_SERVER_DIR}  ]; then
+		echo "copy abort due to var TFTP_SERVER_DIR = null"
+		exit 0
+	fi
+
+	cp $rootfs_update_tar_name ${TFTP_SERVER_DIR}/
+
+}
+
 install_rootfs_update()
 {
 	rm -rf $rootfs_update_path
@@ -125,7 +184,7 @@ install_rootfs_update()
 	#更新build_time
 	boardinfo_define_file="boardinfo.define"
 	BUILD_TIME_KEY="rootfs_img_build_time="
-	BUILD_TIME=`date +"%F %T"`
+	BUILD_TIME=`date +"%F_%T"`
 	echo "$SUDO_PASSWD" | sudo -S sed -i -e "s/^$BUILD_TIME_KEY.*$/$BUILD_TIME_KEY$BUILD_TIME/g" $rootfs_update_path_etc_board/$boardinfo_define_file
 	#更新根文件系统中的文件
 	cp $rootfs_update_path_etc_board/$boardinfo_define_file $LPC3250_ETC_BOARD_DEST_PATH/$boardinfo_define_file
@@ -168,6 +227,11 @@ install_tci6614()
 	#install_files $BIN_SRC_PATH $cpu_name_tci6614 $TCI6614_BIN_DEST_PATH
 	#install_link $SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_SBIN_DEST_PATH
 	install_usr_share $USR_SHARE_SRC_PATH $TCI6614_USR_SHARE_DEST_PATH
+
+	cp $rootfs_common_path/etc/$cpu_name_tci6614/profile $TCI6614_ROOTFS_DEST_PATH/etc/
+	cp $rootfs_common_path/etc/$cpu_name_tci6614/inittab $TCI6614_ROOTFS_DEST_PATH/etc/
+	cp $rootfs_common_path/etc/$cpu_name_tci6614/fstab $TCI6614_ROOTFS_DEST_PATH/etc/
+	cp $rootfs_common_path/etc/$cpu_name_tci6614/init.d/rc $TCI6614_ROOTFS_DEST_PATH/$ETC_INITD_SUFFIX
 }
 
 if [ $# -ne 1 ]; then
@@ -188,12 +252,14 @@ case "$1" in
 
 	$TCI6614_KEY)
 		install_tci6614
+		install_rootfs_update_tci6614
 		;;
 
 	$ALL_KEY)
 		install_lpc3250
 		install_rootfs_update
 		install_tci6614
+		install_rootfs_update_tci6614
 		;;
 	$PACK_SHELL)
 		#拷贝打包脚本到相应的目录中

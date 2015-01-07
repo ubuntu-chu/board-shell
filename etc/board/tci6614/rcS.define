@@ -52,7 +52,7 @@ MAC_HWADDRESS_KEY="hwaddress ether"
 
 #rootfs分区实际挂载名称 这个依据根文件系统类型不同 挂载名称可能不同
 ROOTFS_MOUNT_NAME_NORMAL="rootfs"
-ROOTFS_MOUNT_NAME_RECOVERY="ubi0:rootfs"
+ROOTFS_MOUNT_NAME_RECOVERY="recover-fs"
 
 #内核中rootfs分区名称
 ROOTFS_PARTION_NAME_KERNEL="rootfs"
