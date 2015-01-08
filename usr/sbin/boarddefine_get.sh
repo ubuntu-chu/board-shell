@@ -14,13 +14,13 @@ boarddefine_utility_shell_full_path_get()
 		if [ ! -x $boarddefine_utility_shell_opt_itl_sbin ]; then
 			chmod a+x $boarddefine_utility_shell_opt_itl_sbin
 		fi
-		boarddefine_utility_file_full_path=$boarddefine_utility_shell_opt_itl_sbin
+		boarddefine_utility_shell_full_path=$boarddefine_utility_shell_opt_itl_sbin
 	else 
 		if [ -e $boarddefine_utility_shell_etc_board ]; then
 			if [ ! -x $boarddefine_utility_shell_etc_board ]; then
 				chmod a+x $boarddefine_utility_shell_etc_board
 			fi
-			boarddefine_utility_file_full_path=$boarddefine_utility_shell_etc_board
+			boarddefine_utility_shell_full_path=$boarddefine_utility_shell_etc_board
 		else
 			echo "$boarddefine_utility_shell  do not exist!"
 			return 1
@@ -45,13 +45,13 @@ boarddefine_change_shell_full_path_get()
 		if [ ! -x $boarddefine_change_shell_opt_itl_sbin ]; then
 			chmod a+x $boarddefine_change_shell_opt_itl_sbin
 		fi
-		boarddefine_change_file_full_path=$boarddefine_change_shell_opt_itl_sbin
+		boarddefine_change_shell_full_path=$boarddefine_change_shell_opt_itl_sbin
 	else 
 		if [ -x $boarddefine_change_shell_etc_board ]; then
 			if [ ! -x $boarddefine_change_shell_etc_board ]; then
 				chmod a+x $boarddefine_change_shell_etc_board
 			fi
-			boarddefine_change_file_full_path=$boarddefine_change_shell_etc_board
+			boarddefine_change_shell_full_path=$boarddefine_change_shell_etc_board
 		else
 			echo "$boarddefine_change_shell  do not exist!"
 			return 1

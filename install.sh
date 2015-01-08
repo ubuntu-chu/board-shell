@@ -221,9 +221,12 @@ install_lpc3250()
 	echo "$SUDO_PASSWD" | sudo -S cp -r $LPC3250_ETC_BOARD_DEST_PATH/* /etc/board/
 
 	#将boarddefine下的脚本拷贝到app安装包中
-	cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-change.sh  /home/chum/work/lte/lpc3250/opt-ccu/opt/itl/sbin/
-	cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-utility.sh  /home/chum/work/lte/lpc3250/opt-rru/opt/itl/sbin/
-	cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/rcS.board  /home/chum/work/lte/lpc3250/opt-rru/opt/itl/sbin/
+	for dir in /home/chum/work/lte/lpc3250/opt-ccu/opt/itl/sbin/ /home/chum/work/lte/lpc3250/opt-rru/opt/itl/sbin/;
+	do
+		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-change.sh  $dir
+		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-utility.sh  $dir
+		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/rcS.board  $dir
+	done
 }
 
 install_tci6614()

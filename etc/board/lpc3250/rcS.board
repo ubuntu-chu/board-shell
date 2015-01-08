@@ -15,7 +15,7 @@ rs_ccu                 2100             rs_ccu_hardware_1
 rfu_rru_hardware_3={
 	value=3
 	default=yes
-	config=lmk04806_clkin_def_10M:rf2052_def_400M
+	config=rfu_rru_subhardware_def_2:lmk04806_clkin_def_10M:rf2052_def_400M
 }
 #rfu_rru_hardware_4={
 #	value=4
@@ -23,29 +23,99 @@ rfu_rru_hardware_3={
 #	config=lmk04806_clkin_def_30M:rf2052_def_400M
 #}
 
+rfu_rru_subhardware_define={
+	type=1
+	name=subhardware
+	range=1:2
+}
+
+rfu_rru_subhardware_def_1={
+	default=1
+	define=rfu_rru_subhardware_define
+}
+
+rfu_rru_subhardware_def_2={
+	default=2
+	define=rfu_rru_subhardware_define
+}
+
+#---------------------------------------
+
 cs_rfu_rru_hardware_1={
 	value=1
 	default=yes
-	config=lmk04806_clkin_def_10M:rf2052_def_400M
+	config=cs_rru_subhardware_def_1:lmk04806_clkin_def_10M:rf2052_def_400M
 }
+
+cs_rru_subhardware_define={
+	type=1
+	name=subhardware
+	range=1:2
+}
+
+cs_rru_subhardware_def_1={
+	default=1
+	define=cs_rru_subhardware_define
+}
+
+#---------------------------------------
 
 ss_rfu_rru_hardware_1={
 	value=1
 	default=yes
-	config=lmk04806_clkin_def_10M:rf2052_def_400M
+	config=ss_rru_subhardware_def_1:lmk04806_clkin_def_10M:rf2052_def_400M
 }
+
+ss_rru_subhardware_define={
+	type=1
+	name=subhardware
+	range=1:2
+}
+
+ss_rru_subhardware_def_1={
+	default=1
+	define=ss_rru_subhardware_define
+}
+
+#---------------------------------------
 
 ifu_ccu_hardware_1={
 	value=1
 	default=yes
-	config=config_none
+	config=ifu_ccu_subhardware_def_1
 }
+
+ifu_ccu_subhardware_define={
+	type=1
+	name=subhardware
+	range=1
+}
+
+ifu_ccu_subhardware_def_1={
+	default=1
+	define=ifu_ccu_subhardware_define
+}
+
+#---------------------------------------
 
 rs_ccu_hardware_1={
 	value=1
 	default=yes
-	config=config_none
+	config=rs_ccu_subhardware_def_1
 }
+
+rs_ccu_subhardware_define={
+	type=1
+	name=subhardware
+	range=1
+}
+
+rs_ccu_subhardware_def_1={
+	default=1
+	define=rs_ccu_subhardware_define
+}
+
+#---------------------------------------
 
 lmk04806_clkin={
 	type=1

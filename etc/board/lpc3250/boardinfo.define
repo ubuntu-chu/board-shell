@@ -40,6 +40,7 @@ pre-define={
 	board_name=rs_ccu
 	board_type=2100
 	hardware=1
+	subhardware=1
 }
 
 #proc_none：代表不产生/proc下相应目录与文件
@@ -55,6 +56,7 @@ proc_rru={
 	board_name=${board_name}
 	board_type=${board_type}
 	hardware=${hardware}
+	subhardware=${subhardware}
 }
 
 proc_ccu={
@@ -62,6 +64,7 @@ proc_ccu={
 	board_name=${board_name}
 	board_type=${board_type}
 	hardware=${hardware}
+	subhardware=${subhardware}
 }
 
 priv_rru1={

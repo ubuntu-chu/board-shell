@@ -95,16 +95,17 @@ killapp
 if [ $boarddefine_get_file_exist -eq 1 ]; then
 	boarddefine_utility_shell_full_path_get
 fi
-if [ ! -z $boarddefine_utility_shell_full_path ]; then
+if [ -z $boarddefine_utility_shell_full_path ]; then
 	have_boarddefine_utility_file=0
 else
 	if [ $boarddefine_get_file_exist -eq 1 ]; then
 		boarddefine_change_shell_full_path_get
 	fi
-	if [ ! -z $boarddefine_change_shell_full_path ]; then
+	if [ -z $boarddefine_change_shell_full_path ]; then
 		have_boarddefine_utility_file=2
 	else
-		echo ". $boarddefine_utility_shell_full_path"
+		echo "boarddefine_utility_shell_full_path=$boarddefine_utility_shell_full_path"
+		echo "boarddefine_change_shell_full_path=$boarddefine_change_shell_full_path"
 		. $boarddefine_utility_shell_full_path
 
 		#获取当前板载定义配置
