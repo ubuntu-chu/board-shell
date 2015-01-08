@@ -42,39 +42,6 @@ help(){
 	exit 1
 }
 
-execute_cmd()
-{
-	echo ""
-	echo "-------------------------------------------------------------"
-	echo ""
-	echo "$@"
-	echo ""
-	echo "-------------------------------------------------------------"
-	echo ""
-
-	$@
-	if [ $? -ne 0 ];then
-		echo "execute $@ failed! please check what happened!"
-		exit 1
-	fi
-}
-
-boardinfo_define_copy()
-{
-	partion_find "$1"
-	if [ $? -eq 0 ]; then
-		mount_point="/mnt/src"
-		boardinfo_define_file="/etc/board/boardinfo.define"
-		cat /proc/mounts|awk '{print $2}'|grep "$mount_point" > /dev/null
-		if [ $? -eq 0  ]; then
-			echo "$mount_point mount! now umount it!"
-			execute_cmd umount $mount_point
-		fi
-		execute_cmd mount -t jffs2 -o sync $PARTION_DEV_BLOCK_FILE $mount_point
-		execute_cmd cp $boardinfo_define_file $mount_point/$boardinfo_define_file
-		execute_cmd umount $mount_point
-	fi
-}
 
 if [ $# -ne 3 ]; then
 	help
@@ -118,7 +85,8 @@ case $3 in
 		#拷贝boardinfo.define文件
 		boardinfo_define_copy  $FLASH_RECOVER_ROOTFS_PARTION_NAME
 		#重启，此时使用的环境变量仍然为uboot中存在的老旧的环境变量
-		execute_cmd reboot
+		#execute_cmd reboot
+		execute_cmd echo "please run <reboot> to reboot system"	
 		;;
 	$STEP_2)
 
@@ -126,7 +94,8 @@ case $3 in
 		#升级bootloader
 		execute_cmd bootloader_partion_flash.sh $TFTP_SERVER_IP $DEFAULT_BOOTLOADER_3IN1_PACKAGE
 		#重启 使用新的boot环境变量，并自动保存环境变量
-		execute_cmd reboot
+		#execute_cmd reboot
+		execute_cmd echo "please run <reboot> to reboot system"	
 		;;
 
 	$STEP_3)

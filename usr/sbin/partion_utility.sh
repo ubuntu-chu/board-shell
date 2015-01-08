@@ -36,6 +36,39 @@ partion_find()
 }
 
 
+execute_cmd()
+{
+	echo ""
+	echo "-------------------------------------------------------------"
+	echo ""
+	echo "$@"
+	echo ""
+	echo "-------------------------------------------------------------"
+	echo ""
+
+	$@
+	if [ $? -ne 0 ];then
+		echo "execute $@ failed! please check what happened!"
+		exit 1
+	fi
+}
+
+boardinfo_define_copy()
+{
+	partion_find "$1"
+	if [ $? -eq 0 ]; then
+		mount_point="/mnt/src"
+		boardinfo_define_file="/etc/board/boardinfo.define"
+		cat /proc/mounts|awk '{print $2}'|grep "$mount_point" > /dev/null
+		if [ $? -eq 0  ]; then
+			echo "$mount_point mount! now umount it!"
+			execute_cmd umount $mount_point
+		fi
+		execute_cmd mount -t jffs2 -o sync $PARTION_DEV_BLOCK_FILE $mount_point
+		execute_cmd cp $boardinfo_define_file $mount_point/$boardinfo_define_file
+		execute_cmd umount $mount_point
+	fi
+}
 
 
 

@@ -27,8 +27,13 @@ DEL_PACKAGE_FILE=1
 tar_opt="zxvf"
 have_valid_boarddefine=0
 have_boarddefine_utility_file=0
-boarddefine_change_shell="/etc/board/boarddefine-change.sh"
-boarddefine_utility_file="/etc/board/boarddefine-utility.sh"
+
+boarddefine_get_file="/usr/sbin/boarddefine_get.sh"
+if [ ! -e $boarddefine_get_file ]; then
+	echo "$boarddefine_get_file do not exist!"
+	exit 1
+fi
+. $boarddefine_get_file
 
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	help
@@ -80,19 +85,26 @@ fi
 
 killapp
 
-if [ ! -e $boarddefine_utility_file ]; then
+boarddefine_utility_shell_full_path_get
+if [ $? -ne 0 ]; then
 	have_boarddefine_utility_file=0
 else
-	. $boarddefine_utility_file
-
-	#获取当前板载定义配置
-	generate_var_from_file "${PREV_DEFINE_KEY}" "$BOARD_INFO_SRC_FILE"
-
-	have_boarddefine_utility_file=1
-	if [ ${#key_array[*]} -eq 0 ]; then
-		have_valid_boarddefine=0
+	boarddefine_change_shell_full_path_get
+	if [ $? -ne 0 ]; then
+		have_boarddefine_utility_file=2
 	else
-		have_valid_boarddefine=1
+		echo ". $boarddefine_utility_shell_full_path"
+		. $boarddefine_utility_shell_full_path
+
+		#获取当前板载定义配置
+		generate_var_from_file "${PREV_DEFINE_KEY}" "$BOARD_INFO_SRC_FILE"
+
+		have_boarddefine_utility_file=1
+		if [ ${#key_array[*]} -eq 0 ]; then
+			have_valid_boarddefine=0
+		else
+			have_valid_boarddefine=1
+		fi
 	fi
 fi
 
@@ -122,14 +134,19 @@ if [ $? -eq 0 ]; then
 				break
 			fi
 		done
-		echo "$boarddefine_change_shell ${config_array[*]}"
-		$boarddefine_change_shell ${config_array[*]}
+		echo "$boarddefine_change_shell_full_path ${config_array[*]}"
+		$boarddefine_change_shell_full_path ${config_array[*]}
 	else
 		if [ $have_boarddefine_utility_file -eq 0 ]; then
-			echo "$boarddefine_utility_file  do not exist!"
-			echo "you must manual set baord define info by run $boarddefine_change_shell!"
+			echo "$boarddefine_utility_shell  do not exist!"
+			echo "you must manual set baord define info by run $boarddefine_change_shell_full_path!"
 		else
-			echo "$BOARD_INFO_SRC_FILE file do not have a valid board define! you must manual set baord define info by run $boarddefine_change_shell!"
+			if [ $have_boarddefine_utility_file -eq 1 ]; then
+				echo "$BOARD_INFO_SRC_FILE file do not have a valid board define! you must manual set baord define info by run $boarddefine_change_shell_full_path!"
+			else
+				echo "$boarddefine_change_shell_full_path do not exist!"
+				echo "please check what happend!"
+			fi
 		fi
 	fi
 else

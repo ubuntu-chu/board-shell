@@ -151,6 +151,7 @@ install_rootfs_update_tci6614()
 		exit 0
 	fi
 
+	echo "cp $rootfs_update_tar_name ${TFTP_SERVER_DIR}/"
 	cp $rootfs_update_tar_name ${TFTP_SERVER_DIR}/
 
 }
@@ -199,6 +200,7 @@ install_rootfs_update()
 		exit 0
 	fi
 
+	echo "cp $rootfs_update_tar_name ${TFTP_SERVER_DIR}/"
 	cp $rootfs_update_tar_name ${TFTP_SERVER_DIR}/
 
 }
@@ -214,7 +216,14 @@ install_lpc3250()
 	install_files $SBIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_SBIN_DEST_PATH
 	install_usr_share $USR_SHARE_SRC_PATH $LPC3250_USR_SHARE_DEST_PATH
 
+	#将脚本拷贝到本地PC中
+	BOARDDEFINE_PATH=boarddefine
 	echo "$SUDO_PASSWD" | sudo -S cp -r $LPC3250_ETC_BOARD_DEST_PATH/* /etc/board/
+
+	#将boarddefine下的脚本拷贝到app安装包中
+	cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-change.sh  /home/chum/work/lte/lpc3250/opt-ccu/opt/itl/sbin/
+	cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-utility.sh  /home/chum/work/lte/lpc3250/opt-rru/opt/itl/sbin/
+	cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/rcS.board  /home/chum/work/lte/lpc3250/opt-rru/opt/itl/sbin/
 }
 
 install_tci6614()

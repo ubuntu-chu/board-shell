@@ -1,15 +1,38 @@
 #!/bin/bash
 
-boarddefine_utility_file="/etc/board/boarddefine-utility.sh"
-if [ ! -e $boarddefine_utility_file ]; then
-	echo "$boarddefine_utility_file  do not exist!"
+#包含partion_utility.sh的主要目的是更新恢复模式文件系统
+partion_utility_file=/usr/sbin/partion_utility.sh
+partion_utility_file_exsit=0
+if [ -e $partion_utility_file ]; then
+	. $partion_utility_file
+	partion_utility_file_exsit=1
+fi
+
+boarddefine_get_file="/usr/sbin/boarddefine_get.sh"
+if [ ! -e $boarddefine_get_file ]; then
+	echo "$boarddefine_get_file do not exist!"
 	exit 1
 fi
-. $boarddefine_utility_file
+. $boarddefine_get_file
+
+#判断是否存在boarddefine-utility.sh文件  若不存在 则脚本退出
+boarddefine_utility_shell_full_path_get
+if [ $? -ne 0 ]; then
+	echo "$boarddefine_utility_shell  do not exist!"
+	exit 1
+fi
+
+echo ". $boarddefine_utility_shell_full_path"
+. $boarddefine_utility_shell_full_path
 
 DEBUG=0
 
-boardname_define_file="/etc/board/rcS.board"
+#此处为兼容处理
+if [ -e /opt/itl/sbin/rcS.board ]; then
+	boardname_define_file="/opt/itl/sbin/rcS.board"
+else
+	boardname_define_file="/etc/board/rcS.board"
+fi
 #板名表起始 结束标记
 boardname_table_start="#boardname definition table -- start"
 boardname_table_end="#boardname definition tabel -- end"
@@ -668,4 +691,16 @@ rm -rf $boardname_file
 
 echo "execute </etc/board/cpu-identify.sh start> to update boardinfo file"
 /etc/board/cpu-identify.sh start > /dev/null
+
+if [ $partion_utility_file_exsit -eq 1 ]; then
+	if [ -z $RECOVER_ROOTFS_PARTION_NAME ]; then
+		FLASH_RECOVER_ROOTFS_PARTION_NAME="rootfs-recover" 
+	else
+		FLASH_RECOVER_ROOTFS_PARTION_NAME=$RECOVER_ROOTFS_PARTION_NAME
+	fi
+
+	#拷贝boardinfo.define文件
+	boardinfo_define_copy  $FLASH_RECOVER_ROOTFS_PARTION_NAME
+fi
+
 

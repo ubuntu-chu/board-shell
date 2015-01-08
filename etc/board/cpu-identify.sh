@@ -307,7 +307,6 @@ cpu_identify_proc(){
 	echo "    ${NETWORK_KEY}=$network_value" >> $BOARD_INFO_FILE
 	echo "    ${proc_key}=${proc_value}" >> $BOARD_INFO_FILE
 	echo "    ${priv_key}=${priv_value}" >> $BOARD_INFO_FILE
-	echo "    etc_board_shell_version=${VERSION}" >> $BOARD_INFO_FILE
 
 	#添加bootloader版本信息
 	proc_cmdline_value $BOOTLOADER_VER_KEY 
@@ -327,6 +326,7 @@ cpu_identify_proc(){
 	kerenl_version=$kerenl_version"`echo $uname_content|cut -d ' ' -f 9`_"
 	kerenl_version=$kerenl_version"`echo $uname_content|cut -d ' ' -f 3`"
 	echo "    kernel_version=${kerenl_version}" >> $BOARD_INFO_FILE
+	echo "    rootfs_version=${VERSION}" >> $BOARD_INFO_FILE
 	#get item line
 	build_time=`grep -E "^\<${BUILD_TIME_KEY}\>" $BOARD_INFO_SRC_FILE`
 	if [ ! -z "$build_time" ]; then
