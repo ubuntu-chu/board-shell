@@ -2,7 +2,7 @@
 
 LPC3250_KEY="lpc3250"
 TCI6614_KEY="tci6614"
-ALL_KEY="all-cpu"
+ALL_KEY="all"
 PACK_SHELL="pack-shell"
 
 

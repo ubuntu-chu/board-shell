@@ -29,11 +29,18 @@ have_valid_boarddefine=0
 have_boarddefine_utility_file=0
 
 boarddefine_get_file="/usr/sbin/boarddefine_get.sh"
+boarddefine_get_file_exist=0
 if [ ! -e $boarddefine_get_file ]; then
 	echo "$boarddefine_get_file do not exist!"
-	exit 1
+	echo "try to use /etc/board/"
+	boarddefine_utility_shell="boarddefine-utility.sh"
+	boarddefine_utility_shell_full_path="/etc/board/$boarddefine_utility_shell"
+	boarddefine_change_shell="boarddefine-change.sh"
+	boarddefine_change_shell_full_path="/etc/board/$boarddefine_change_shell"
+else
+	. $boarddefine_get_file
+	boarddefine_get_file_exist=1
 fi
-. $boarddefine_get_file
 
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	help
@@ -85,12 +92,16 @@ fi
 
 killapp
 
-boarddefine_utility_shell_full_path_get
-if [ $? -ne 0 ]; then
+if [ $boarddefine_get_file_exist -eq 1 ]; then
+	boarddefine_utility_shell_full_path_get
+fi
+if [ ! -z $boarddefine_utility_shell_full_path ]; then
 	have_boarddefine_utility_file=0
 else
-	boarddefine_change_shell_full_path_get
-	if [ $? -ne 0 ]; then
+	if [ $boarddefine_get_file_exist -eq 1 ]; then
+		boarddefine_change_shell_full_path_get
+	fi
+	if [ ! -z $boarddefine_change_shell_full_path ]; then
 		have_boarddefine_utility_file=2
 	else
 		echo ". $boarddefine_utility_shell_full_path"

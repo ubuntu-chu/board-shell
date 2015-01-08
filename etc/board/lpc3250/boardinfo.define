@@ -51,12 +51,14 @@ pre-define={
 #若value的内容中含有空格 则空格会被替换为_
 #下面定义的区段 请不要更改！
 proc_rru={
+	station=center_station
 	board_name=${board_name}
 	board_type=${board_type}
 	hardware=${hardware}
 }
 
 proc_ccu={
+	station=center_station
 	board_name=${board_name}
 	board_type=${board_type}
 	hardware=${hardware}

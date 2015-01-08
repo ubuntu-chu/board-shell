@@ -129,14 +129,23 @@ cpu_identify_proc(){
 		| awk '{print $0 >> "'"${BOARD_INFO_FILE}"'"}'
 
 	#更改网卡mac地址信息中的oui和entity信息
-	proc_line $MAC_OUI_KEY $BOARD_INFO_SRC_FILE
-	mac_oui=${PROC_LINE_VALUE}
+	proc_line_return $MAC_OUI_KEY $BOARD_INFO_SRC_FILE
+	if [ $? -eq 0 ]; then
+		mac_oui=$PROC_LINE_VALUE
+	else
+		mac_oui=80
+	fi
 
 	#获取mac_batch_seq
 	#判断mac_batch_seq来源
 	if [ $MAC_BATCH_SEQ_SOURCE -eq $MAC_BATCH_SEQ_SOURCE_DEFINE ]; then
-		proc_line $MAC_BATCH_SEQ_KEY $BOARD_INFO_SRC_FILE
-		mac_batch_seq=${PROC_LINE_VALUE}
+		proc_line_return $MAC_BATCH_SEQ_KEY $BOARD_INFO_SRC_FILE
+		if [ $? -eq 0 ]; then
+			mac_batch_seq=${PROC_LINE_VALUE}
+		else
+			#取默认值
+			mac_batch_seq="15:00:00"
+		fi
 	else
 		#从系统命令行中获取
 		proc_cmdline_value $MAC_BATCH_SEQ_KEY 
@@ -418,8 +427,12 @@ else
 fi
 
 #get force value line
-proc_line $BOARD_ID_FORCE_VALUE_KEY $BOARD_INFO_SRC_FILE
-BOARD_ID_FORCE_VALUE=$PROC_LINE_VALUE
+proc_line_return $BOARD_ID_FORCE_VALUE_KEY $BOARD_INFO_SRC_FILE
+if [ $? -eq 0 ]; then
+	BOARD_ID_FORCE_VALUE=$PROC_LINE_VALUE
+else
+	BOARD_ID_FORCE_VALUE=
+fi
 
 #force value exist
 #若board id强制值存在 则使用强制值
@@ -433,8 +446,12 @@ fi
 
 #获取cpu_id
 #get force value line
-proc_line $CPU_ID_FORCE_VALUE_KEY $BOARD_INFO_SRC_FILE
-CPU_ID_FORCE_VALUE=$PROC_LINE_VALUE
+proc_line_return $CPU_ID_FORCE_VALUE_KEY $BOARD_INFO_SRC_FILE
+if [ $? -eq 0 ]; then
+	CPU_ID_FORCE_VALUE=$PROC_LINE_VALUE
+else
+	CPU_ID_FORCE_VALUE=
+fi
 
 #force value exist
 if [ ! -z $CPU_ID_FORCE_VALUE ]; then

@@ -61,6 +61,7 @@ SHELL_PRIV_FILE=/var/run/app-priv-file
 SHELL_DEBUG_FILE=/var/run/app-debug-file
 SHELL_PRIV_SYS_FILE=/var/run/sys-priv-file
 SHELL_ERROR_SYS_FILE=/var/run/sys-error-file
+SHELL_TEMP_SYS_FILE=/var/run/sys-temporary-file
 
 
 #boardinfo file
