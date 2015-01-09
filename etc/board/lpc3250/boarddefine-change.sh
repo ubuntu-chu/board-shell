@@ -9,15 +9,22 @@ if [ -e $partion_utility_file ]; then
 fi
 
 boarddefine_get_file="/usr/sbin/boarddefine_get.sh"
+boarddefine_get_file_exist=0
 if [ ! -e $boarddefine_get_file ]; then
 	echo "$boarddefine_get_file do not exist!"
-	exit 1
+	echo "try to use /etc/board/"
+	boarddefine_utility_shell="boarddefine-utility.sh"
+	boarddefine_utility_shell_full_path="/etc/board/$boarddefine_utility_shell"
+else
+	. $boarddefine_get_file
+	boarddefine_get_file_exist=1
 fi
-. $boarddefine_get_file
 
 #判断是否存在boarddefine-utility.sh文件  若不存在 则脚本退出
-boarddefine_utility_shell_full_path_get
-if [ $? -ne 0 ]; then
+if [ $boarddefine_get_file_exist -eq 1 ]; then
+	boarddefine_utility_shell_full_path_get
+fi
+if [ -z $boarddefine_utility_shell_full_path ]; then
 	echo "$boarddefine_utility_shell  do not exist!"
 	exit 1
 fi
@@ -51,7 +58,7 @@ hardwareconfig_array=()
 configname_array=()
 configdefault_array=()
 configrange_array=()
-configtype_array=()
+configwidget_array=()
 
 #新配置数组
 new_config_array=()
@@ -80,6 +87,10 @@ param_current="--current"
 paramvalue_array=()
 #参数key数组
 paramkey_array=()
+
+#类型关键字  join类型：将默认值与range  name定义在一起   detach类型：默认值与range name分开
+type_key_join="join"
+type_key_detach="detach"
 
 help(){
 	echo "Usage            : $0 [$param_help|$param_current|$param_debug|$param_board_name|$param_hardware]"
@@ -266,6 +277,7 @@ hardwareconfig_get()
 	configname_array=()
 	configdefault_array=()
 	configrange_array=()
+	configwidget_array=()
 
 	list=`echo "$1" | tr ':' ' '`
 	#判断硬件版本下面是否有配置
@@ -285,12 +297,31 @@ hardwareconfig_get()
 			configdefault_array[$index]=$default
 		fi
 
-		if [ -z $define ]; then
-			echo "config:$var  key[define] value undefined"
+
+		if [ -z $type ]; then
+			echo "config:$var  key[type] value undefined"
 			exit 1
-		else
-			generate_var_from_file "${define}" "$boardname_define_file"
 		fi
+		#依据type来进行不同的处理
+
+		case "$type" in 
+			"$type_key_join")
+				debug echo "config type:$type"
+				;;
+			"$type_key_detach")
+				debug echo "config type:$type"
+				if [ -z $define ]; then
+					echo "config:$var  key[define] value undefined"
+					exit 1
+				else
+					generate_var_from_file "${define}" "$boardname_define_file"
+				fi
+				;;
+			*)
+				echo "invalid type[$type]"
+				exit 1
+				;;
+		esac
 
 		if [ -z $name ]; then
 			echo "config:$var  key[name] value undefined"
@@ -304,11 +335,11 @@ hardwareconfig_get()
 		else
 			configrange_array[$index]=$range
 		fi
-		if [ -z $type ]; then
-			echo "config:$var  key[type] value undefined"
+		if [ -z $widget ]; then
+			echo "config:$var  key[widget] value undefined"
 			exit 1
 		else
-			configtype_array[$index]=$type
+			configwidget_array[$index]=$widget
 		fi
 		index=$(($index+1))
 	done
@@ -599,8 +630,8 @@ else
 		do
 			config_name=${configname_array[$index]}
 			config_defalut_value=${configdefault_array[$index]}
-			#目前config_type未使用
-			config_type=${configtype_array[$index]}
+			#目前widget_type未使用  未来的实现中 可通过widget的类型来提供不同的编译形式  目前只支持单选框类型
+			widget_type=${configwidget_array[$index]}
 			echo "config: ${config_name}"
 			if [ $board_name_changed -eq 0 ]; then
 				eval config_name_value=\$${config_name}

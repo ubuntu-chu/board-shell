@@ -4,6 +4,7 @@
 etc_board_rcs_file=/etc/board/rcS
 if [ ! -e $etc_board_rcs_file ]; then
 	echo "$etc_board_rcs_file do not exist!"
+	exit 1
 fi
 . $etc_board_rcs_file
 
@@ -255,4 +256,5 @@ sed -i "/^"${cur_network_name}"={/,/^\}/ d\
 
 echo "network change success"
 echo "you can run /etc/board/validate-boardinfo.sh to view new boardinfo"
+echo "when you make sure that the network configuration is correct, you can press <reboot> to let the network configuration take effect!"
 

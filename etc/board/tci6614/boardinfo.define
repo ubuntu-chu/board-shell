@@ -31,6 +31,12 @@ none		0           lte           tci6614      itl-bbu        network_bbu         
 none		3           lte           tci6614      itl-mesh       network_mesh        proc_mesh      priv_mesh
 #boardinfo definition tabel -- end
 
+#系统配置区段
+sys-config={
+	station=center_station
+}
+
+
 #proc_none：代表不产生/proc下相应目录与文件
 #priv_none：代表不产生priv区段下相应文件
 #proc priv中的条目为key=value格式  
@@ -39,7 +45,7 @@ none		3           lte           tci6614      itl-mesh       network_mesh        
 #      
 #若value的内容中含有空格 则空格会被替换为_
 proc_bbu={
-	station=center_station
+	station=${station}
 	board_name=itl-bbu
 	board_id=${BOARD_ID}
 	cpu_id=${CPU_ID}

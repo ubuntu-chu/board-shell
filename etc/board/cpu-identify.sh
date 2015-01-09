@@ -360,6 +360,33 @@ echo "Starting cpu identify..."
 echo "************board info definition************" > $BOARD_INFO_FILE
 echo "" >> $BOARD_INFO_FILE
 
+#处理sys-config区段
+proc_line_return $SYS_CONFIG_KEY $BOARD_INFO_SRC_FILE
+#存在此区段时 才进行解析
+if [ $? -eq 0 ]; then
+
+	echo "$SYS_CONFIG_KEY={" >> $BOARD_INFO_FILE
+
+	echo -n "" > $SHELL_SYS_CONFIG_SYS_FILE
+	section_content_get $SYS_CONFIG_KEY $BOARD_INFO_SRC_FILE $SHELL_SYS_CONFIG_SYS_FILE
+
+	for file in $SHELL_SYS_CONFIG_SYS_FILE
+	do
+		file_lines_proc $file
+
+		while read line
+		do
+			debug echo $line
+			#依据获取到的key=value键值对  生成一个本地变量  以便后面对其进行引用
+			eval $line
+			echo "    $line" >> $BOARD_INFO_FILE
+		done  < $file
+	done
+	echo "}" >> $BOARD_INFO_FILE
+fi
+
+
+#处理pre-define区段
 proc_line_return $PREV_DEFINE_KEY $BOARD_INFO_SRC_FILE
 
 if [ $? -eq 0 ]; then

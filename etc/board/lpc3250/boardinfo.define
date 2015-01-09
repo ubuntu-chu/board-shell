@@ -33,6 +33,11 @@ none	    none        lte           lpc3250      itl-none-none  network_none_none
 2           0           lte           lpc3250      itl-ccu        network_ccu         proc_ccu    priv_ccu
 #boardinfo definition tabel -- end
 
+#系统配置区段
+sys-config={
+	station=center_station
+}
+
 #预先定义区段 
 #此部分的内容会被直接写入到板载信息文件中
 #下面定义的区段 请不要更改！
@@ -52,7 +57,7 @@ pre-define={
 #若value的内容中含有空格 则空格会被替换为_
 #下面定义的区段 请不要更改！
 proc_rru={
-	station=center_station
+	station=${station}
 	board_name=${board_name}
 	board_type=${board_type}
 	hardware=${hardware}
@@ -60,7 +65,7 @@ proc_rru={
 }
 
 proc_ccu={
-	station=center_station
+	station=${station}
 	board_name=${board_name}
 	board_type=${board_type}
 	hardware=${hardware}
