@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. /etc/board/rcS
+
 help(){
 	echo "Usage                 : $0 <server_ip> [package_file]"
 	echo "Param server_ip       : tftp server_ip"
@@ -27,6 +29,7 @@ DEL_PACKAGE_FILE=1
 tar_opt="zxvf"
 have_valid_boarddefine=0
 have_boarddefine_utility_file=0
+station_change_shell="station-change.sh"
 
 boarddefine_get_file="/usr/sbin/boarddefine_get.sh"
 boarddefine_get_file_exist=0
@@ -120,6 +123,20 @@ else
 	fi
 fi
 
+which $station_change_shell > /dev/null
+if [ $? -eq 0 ]; then
+	station_recover_need=1
+	#获取当前配置信息
+	current_station=`station-change.sh --current | awk -F '=' '/^station/ {print $2}'`
+	if [ -z $current_station ]; then
+		#没有合法值 相当于不用进行设置
+		station_recover_need=0
+	fi
+else
+
+	station_recover_need=0
+fi
+
 echo "rm -rf /etc/board"
 rm -rf /etc/board
 echo "tar $tar_opt $PACKAGE_FILE -C /"
@@ -131,6 +148,12 @@ if [ $? -eq 0 ]; then
 	echo "you can run /etc/board/validate-boardinfo.sh to view new boardinfo"
 	removepackage
 	echo "rootfs update success!"
+	if [ $station_recover_need -eq 1 ]; then
+		echo "recover previous station"
+		echo "$station_change_shell --station $current_station --boardinfo_sync_dis"
+		$station_change_shell --station $current_station --boardinfo_sync_dis
+		echo ""
+	fi
 	if [ $have_valid_boarddefine -eq 1 ]; then
 		echo "recover previous board define info"
 		config_array=()

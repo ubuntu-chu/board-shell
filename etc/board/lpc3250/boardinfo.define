@@ -35,7 +35,7 @@ none	    none        lte           lpc3250      itl-none-none  network_none_none
 
 #系统配置区段
 sys-config={
-	station=center_station
+	station=car_central_station
 }
 
 #预先定义区段 

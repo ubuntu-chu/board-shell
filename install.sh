@@ -3,6 +3,7 @@
 LPC3250_KEY="lpc3250"
 TCI6614_KEY="tci6614"
 ALL_KEY="all"
+UPDATE_KEY="update"
 PACK_SHELL="pack-shell"
 
 
@@ -195,6 +196,8 @@ install_rootfs_update()
 	cd ..
 	mv $rootfs_update_path/$rootfs_update_tar_name .
 
+	install_lpc3250_misc
+
 	if [ -z ${TFTP_SERVER_DIR}  ]; then
 		echo "copy abort due to var TFTP_SERVER_DIR = null"
 		exit 0
@@ -202,7 +205,24 @@ install_rootfs_update()
 
 	echo "cp $rootfs_update_tar_name ${TFTP_SERVER_DIR}/"
 	cp $rootfs_update_tar_name ${TFTP_SERVER_DIR}/
+}
 
+install_lpc3250_misc()
+{
+	#将脚本拷贝到本地PC中
+	echo "echo "$SUDO_PASSWD" | sudo -S cp -r $LPC3250_ETC_BOARD_DEST_PATH/* /etc/board/"
+	echo "$SUDO_PASSWD" | sudo -S cp -r $LPC3250_ETC_BOARD_DEST_PATH/* /etc/board/
+
+	#将boarddefine下的脚本拷贝到app安装包中
+	for dir in /home/chum/work/lte/lpc3250/opt-ccu/opt/itl/sbin/ /home/chum/work/lte/lpc3250/opt-rru/opt/itl/sbin/;
+	do
+		echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-change.sh  $dir"
+		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-change.sh  $dir
+		echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-utility.sh  $dir"
+		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-utility.sh  $dir
+		echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/rcS.board  $dir"
+		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/rcS.board  $dir
+	done
 }
 
 install_lpc3250()
@@ -216,17 +236,7 @@ install_lpc3250()
 	install_files $SBIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_SBIN_DEST_PATH
 	install_usr_share $USR_SHARE_SRC_PATH $LPC3250_USR_SHARE_DEST_PATH
 
-	#将脚本拷贝到本地PC中
-	BOARDDEFINE_PATH=boarddefine
-	echo "$SUDO_PASSWD" | sudo -S cp -r $LPC3250_ETC_BOARD_DEST_PATH/* /etc/board/
-
-	#将boarddefine下的脚本拷贝到app安装包中
-	for dir in /home/chum/work/lte/lpc3250/opt-ccu/opt/itl/sbin/ /home/chum/work/lte/lpc3250/opt-rru/opt/itl/sbin/;
-	do
-		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-change.sh  $dir
-		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-utility.sh  $dir
-		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/rcS.board  $dir
-	done
+	install_lpc3250_misc
 }
 
 install_tci6614()
@@ -273,11 +283,18 @@ case "$1" in
 		install_tci6614
 		install_rootfs_update_tci6614
 		;;
+
+	$UPDATE_KEY)
+		install_rootfs_update
+		install_rootfs_update_tci6614
+		;;
+
 	$PACK_SHELL)
 		#拷贝打包脚本到相应的目录中
 		cp $rootfs_common_path/pack-shell/$cpu_name_lpc3250/*  $LPC3250_DEST_PATH/
 		cp $rootfs_common_path/pack-shell/$cpu_name_tci6614/*  $TCI6614_DEST_PATH/
 		;;
+
 	*)
 		help
 		;;

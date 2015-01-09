@@ -33,7 +33,7 @@ none		3           lte           tci6614      itl-mesh       network_mesh        
 
 #系统配置区段
 sys-config={
-	station=center_station
+	station=car_central_station
 }
 
 
