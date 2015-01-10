@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # generate network interfaces file
 #

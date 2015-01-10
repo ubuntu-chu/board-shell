@@ -84,22 +84,70 @@ hardwarelist_get()
 
 applicationinfo_write()
 {
+	sys_debug_file="$APP_DIR/$SBIN_PATH/auto_generate_sys_debug"
 	#进入到程序顶层目录  注意：rru 与 ccu的顶层目录不同
 	echo "applicationinfo_write enter dir:$1"
+
+	#获取cmdline版本
+	cd $1/cmdline/
+	app_package_cmdline_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
+	cd $NOW_PATH
+	#获取include版本
+	cd $1/include/
+	app_package_include_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
+	cd $NOW_PATH
+	#获取libs版本
+	cd $1/libs/
+	app_package_libs_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
+	cd $NOW_PATH
+
+	case $2 in
+		ccu)
+			#获取ccu版本
+			cd $1/CCU/
+			app_package_bin_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
+			cd $NOW_PATH
+			#获取install版本
+			#cd $1/install/CCU/
+			#app_package_install_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
+			cd $NOW_PATH
+			;;
+
+		rru)
+			#获取rru版本
+			cd $1/RRU/
+			app_package_bin_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
+			cd $NOW_PATH
+			#获取install版本
+			#cd $1/install/RRU/
+			#app_package_install_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
+			cd $NOW_PATH
+			;;
+		*)
+			echo "applicationinfo_write: invalid param $2"
+			;;
+	esac
 	cd $1
 	#获取svn版本相关信息
 	app_package_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
 	app_modify_time=`svn info | sed -n 's,^最后修改的时间: \(.*\)+\(.*\),\1,p'`
-	#去除app的编译时间
 	echo "applicationinfo_write exit dir:$1"
 	cd $NOW_PATH
-
+	
 	#更新应用程序信息
-	sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${APP_PACKAGE_VERSION_KEY}".*/    echo \""${APP_PACKAGE_VERSION_KEY}"="${ver_prefix}""${app_package_ver}"\" >> \$1/" $2
-	echo "$APP_PACKAGE_VERSION_KEY=${ver_prefix}${app_package_ver}"
+	echo -n "" > "$sys_debug_file"
+	echo "${APP_PACKAGE_VERSION_KEY}=${ver_prefix}${app_package_ver}" >> "$sys_debug_file"
+	echo "application_package_bin_version=${ver_prefix}${app_package_bin_ver}" >> "$sys_debug_file"
+	echo "application_package_lib_version=${ver_prefix}${app_package_libs_ver}" >> "$sys_debug_file"
+	echo "application_package_intall_version=${ver_prefix}${app_package_install_ver}" >> "$sys_debug_file"
+	echo "application_package_cmdline_version=${ver_prefix}${app_package_cmdline_ver}" >> "$sys_debug_file"
+	echo "application_package_include_version=${ver_prefix}${app_package_include_ver}" >> "$sys_debug_file"
 
-	sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${APP_PACKAGE_MODIFY_TIME_KEY}".*/    echo \""${APP_PACKAGE_MODIFY_TIME_KEY}"=""${app_modify_time}""\" >> \$1/" $2
-	echo "$APP_PACKAGE_MODIFY_TIME_KEY=$app_modify_time"
+	#sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${APP_PACKAGE_VERSION_KEY}".*/    echo \""${APP_PACKAGE_VERSION_KEY}"="${ver_prefix}""${app_package_ver}"\" >> \$1/" $2
+	#echo "$APP_PACKAGE_VERSION_KEY=${ver_prefix}${app_package_ver}"
+
+	#sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${APP_PACKAGE_MODIFY_TIME_KEY}".*/    echo \""${APP_PACKAGE_MODIFY_TIME_KEY}"=""${app_modify_time}""\" >> \$1/" $2
+	#echo "$APP_PACKAGE_MODIFY_TIME_KEY=$app_modify_time"
 
 	##更新应用程序信息
 	#sed '1d;s/\\n//g;s/\\t//g;s/\\//g;s/^[[:space:]]*//g;s/"//g' $1 > $TMP_FILE
@@ -134,8 +182,8 @@ applicationinfo_write()
 	#rm -rf $TMP_FILE
 
 	BUILD_TIME=`date +"%F %T"`
-	sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${BUILD_TIME_KEY}".*/    echo \""${BUILD_TIME_KEY}"=""${BUILD_TIME}""\" >> \$1/" $2
-
+	#sed -i "/^"${SYS_SECTION_KEY}"/,/^}/ s/.*"${BUILD_TIME_KEY}".*/    echo \""${BUILD_TIME_KEY}"=""${BUILD_TIME}""\" >> \$1/" $2
+	echo "${BUILD_TIME_KEY}=${BUILD_TIME}" >> "$sys_debug_file"
 }
 
 boardfiles_prepare()
@@ -201,7 +249,7 @@ build_ccu()
 {
 	PARTION_NAME=app-ccu.img
 	APP_TAR_NAME=app-ccu.tar.gz
-	APP_SRC_DIR=$APP_REPOSITORY_DIR/CCU/
+	APP_SRC_DIR=$APP_REPOSITORY_DIR
 
 	#准备工作
 	ccu_prepare
@@ -225,7 +273,7 @@ build_ccu()
 	[ $DEBUG -eq 0 ] && cp -ar $CCU_BIN_SRC_PATH/* $APP_DIR/$BIN_PATH/
 
 	#更新应用程序信息
-	applicationinfo_write $APP_SRC_DIR $APP_PROC_FILE
+	applicationinfo_write $APP_SRC_DIR ccu
 	[ $DEBUG -eq 0 ] && ./_make_app.sh $APP_DIR $PARTION_NAME $PARTION_SIZE $APP_TAR_NAME 
 }
 
@@ -253,7 +301,7 @@ build_rru()
 {
 	PARTION_NAME=app-rru.img
 	APP_TAR_NAME=app-rru.tar.gz
-	APP_SRC_DIR=$APP_REPOSITORY_DIR/RRU/
+	APP_SRC_DIR=$APP_REPOSITORY_DIR
 
 	#准备工作
 	rru_prepare
@@ -277,7 +325,7 @@ build_rru()
 	[ $DEBUG -eq 0 ] && cp -ar $RRU_BIN_SRC_PATH/* $APP_DIR/$BIN_PATH/
 
 	#更新应用程序信息
-	applicationinfo_write $APP_SRC_DIR $APP_PROC_FILE
+	applicationinfo_write $APP_SRC_DIR rru
 	[ $DEBUG -eq 0 ] && ./_make_app.sh $APP_DIR $PARTION_NAME $PARTION_SIZE $APP_TAR_NAME 
 }
 

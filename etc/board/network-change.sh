@@ -47,8 +47,16 @@ section_get()
 
 help()
 {
-	echo "Usage            : $0 <$param_network_name|$param_nic_name|$param_address|$param_debug|$param_netmask|$param_gateway|$param_hwaddress>"
+	echo "Usage            : $0 <$param_network_name|$param_nic_name|$param_address|$param_debug|$param_netmask|$param_gateway|$param_network|$param_hwaddress>"
 	echo "Param $param_help: show help"
+	echo "Param $param_debug: enable debug"
+	echo "Param $param_network_name: network name; you can git it var boardinfo command"
+	echo "Param $param_nic_name: network card name; you can get it var ifconfig command"
+	echo "Param $param_address: ip address"
+	echo "Param $param_netmask: net mask"
+	echo "Param $param_gateway: gateway"
+	echo "Param $param_network: network address"
+	echo "Param $param_hwaddress: mac address"
 	
 	exit 0
 }
@@ -64,6 +72,10 @@ show_current()
 	echo ""
 	exit 0
 }
+
+if [ $# -eq 0 ]; then
+	help
+fi
 
 if [ -z $SHELL_TEMP_SYS_FILE ]; then
 	SHELL_TEMP_SYS_FILE=/var/run/sys-temporary-file
@@ -253,6 +265,8 @@ line_no=$(($line_no-1))
 #将原先的区段删除   再在指定的位置上 添加新的定义
 sed -i "/^"${cur_network_name}"={/,/^\}/ d\
 		;"${line_no}" r "${SHELL_TEMP_SYS_FILE}"" $BOARD_INFO_SRC_FILE
+
+rm -rf $priv_temp_file
 
 echo "network change success"
 echo "you can run /etc/board/validate-boardinfo.sh to view new boardinfo"

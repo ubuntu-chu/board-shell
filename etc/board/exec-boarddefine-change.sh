@@ -2,12 +2,11 @@
 
 . /etc/board/rcS
 
-#此处为兼容处理  使用同一路径下的rcS.board和boarddefine-change.sh文件
-if [ $0 = "/etc/board/boarddefine-change.sh" ]; then
-	boardname_define_file="/etc/board/rcS.board"
-else
-	boardname_define_file="/opt/itl/sbin/rcS.board"
+if [ -z $rcs_board_path ]; then
+	"rcs board path can not find! please use boarddefine-change.sh to call it"
+	exit 1
 fi
+boardname_define_file=$rcs_board_path
 echo "rcS.board=$boardname_define_file"
 
 #兼容处理结束
@@ -700,7 +699,7 @@ rm -rf $temp_file
 rm -rf $boardname_file
 
 echo "execute </etc/board/cpu-identify.sh start> to update boardinfo file"
-/etc/board/cpu-identify.sh start > /dev/null
+/etc/board/cpu-identify.sh start  > /dev/null
 
 if [ $recovery_rootfs_sync -eq 1 ]; then
 	#包含partion_utility.sh的主要目的是更新恢复模式文件系统

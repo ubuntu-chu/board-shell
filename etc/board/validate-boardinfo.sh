@@ -16,7 +16,7 @@ if [ $# -eq 1 ]; then
 	fi
 fi
 
-bash $DEBUG_OPT /etc/board/cpu-identify.sh start
+bash $DEBUG_OPT /etc/board/cpu-identify.sh start > /dev/null
 
 if [ $? -eq 0 ]; then
 	echo "cat $BOARD_INFO_FILE"

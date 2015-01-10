@@ -129,9 +129,7 @@ install_rootfs_update_tci6614()
 	install_files $SBIN_SRC_PATH $cpu_name_tci6614 $rootfs_update_path_sbin
 	install_usr_share $USR_SHARE_SRC_PATH $rootfs_update_path_usr_share
 
-	cp $rootfs_common_path/etc/$cpu_name_tci6614/profile $rootfs_update_path/etc/
-	cp $rootfs_common_path/etc/$cpu_name_tci6614/inittab $rootfs_update_path/etc/
-	cp $rootfs_common_path/etc/$cpu_name_tci6614/fstab $rootfs_update_path/etc/
+	cp -r $rootfs_common_path/etc/$cpu_name_tci6614/* $rootfs_update_path/etc/
 	cp $rootfs_common_path/etc/$cpu_name_tci6614/init.d/rc $rootfs_update_path/$ETC_INITD_SUFFIX
 
 	#更新build_time
@@ -178,9 +176,7 @@ install_rootfs_update()
 	install_files $SBIN_SRC_PATH $cpu_name_lpc3250 $rootfs_update_path_sbin
 	install_usr_share $USR_SHARE_SRC_PATH $rootfs_update_path_usr_share
 
-	cp $rootfs_common_path/etc/$cpu_name_lpc3250/profile $rootfs_update_path/etc/
-	cp $rootfs_common_path/etc/$cpu_name_lpc3250/inittab $rootfs_update_path/etc/
-	cp $rootfs_common_path/etc/$cpu_name_lpc3250/fstab $rootfs_update_path/etc/
+	cp -r $rootfs_common_path/etc/$cpu_name_lpc3250/* $rootfs_update_path/etc/
 	cp $rootfs_common_path/etc/$cpu_name_lpc3250/rc.d/rcS $rootfs_update_path/$ETC_RCD_SUFFIX
 
 	#更新build_time
@@ -216,10 +212,10 @@ install_lpc3250_misc()
 	#将boarddefine下的脚本拷贝到app安装包中
 	for dir in /home/chum/work/lte/lpc3250/opt-ccu/opt/itl/sbin/ /home/chum/work/lte/lpc3250/opt-rru/opt/itl/sbin/;
 	do
-		echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-change.sh  $dir"
-		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-change.sh  $dir
-		echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-utility.sh  $dir"
-		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/boarddefine-utility.sh  $dir
+		#echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/exec-boarddefine-change.sh  $dir"
+		#cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/exec-boarddefine-change.sh  $dir
+		echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/exec-boarddefine-change.sh  $dir"
+		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/exec-boarddefine-change.sh  $dir
 		echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/rcS.board  $dir"
 		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/rcS.board  $dir
 	done
@@ -250,9 +246,7 @@ install_tci6614()
 	#install_link $SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_SBIN_DEST_PATH
 	install_usr_share $USR_SHARE_SRC_PATH $TCI6614_USR_SHARE_DEST_PATH
 
-	cp $rootfs_common_path/etc/$cpu_name_tci6614/profile $TCI6614_ROOTFS_DEST_PATH/etc/
-	cp $rootfs_common_path/etc/$cpu_name_tci6614/inittab $TCI6614_ROOTFS_DEST_PATH/etc/
-	cp $rootfs_common_path/etc/$cpu_name_tci6614/fstab $TCI6614_ROOTFS_DEST_PATH/etc/
+	cp -r $rootfs_common_path/etc/$cpu_name_tci6614/* $TCI6614_ROOTFS_DEST_PATH/etc/
 	cp $rootfs_common_path/etc/$cpu_name_tci6614/init.d/rc $TCI6614_ROOTFS_DEST_PATH/$ETC_INITD_SUFFIX
 }
 
@@ -300,7 +294,8 @@ case "$1" in
 		;;
 esac
 
-cp $rootfs_common_path/usr/sbin/lpc3250/rootfs_update.sh /opt/local/
+#cp $rootfs_common_path/usr/sbin/lpc3250/rootfs_update.sh /opt/local/
+cp $rootfs_common_path/usr/sbin/rootfs_update.sh /opt/local/
 
 exit 0
 

@@ -36,6 +36,14 @@ sys-config={
 	station=car_central_station
 }
 
+#预先定义区段 
+#此部分的内容会被直接写入到板载信息文件中
+#下面定义的区段 请不要更改！
+pre-define={
+	board_name=itl-bbu
+	board_type=1000
+	hardware=1
+}
 
 #proc_none：代表不产生/proc下相应目录与文件
 #priv_none：代表不产生priv区段下相应文件
@@ -46,16 +54,18 @@ sys-config={
 #若value的内容中含有空格 则空格会被替换为_
 proc_bbu={
 	station=${station}
-	board_name=itl-bbu
+	board_name=${board_name}
 	board_id=${BOARD_ID}
 	cpu_id=${CPU_ID}
+	hardware=${hardware}
 }
 
 proc_mesh={
-	station=center_station
-	board_name=itl-mesh
+	station=${station}
+	board_name=${board_name}
 	board_id=${BOARD_ID}
 	cpu_id=${CPU_ID}
+	hardware=${hardware}
 }
 
 priv_bbu={

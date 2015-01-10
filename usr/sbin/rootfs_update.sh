@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 . /etc/board/rcS
 
@@ -27,23 +27,10 @@ DEF_PACKAGE_FILE=itl-lpc3250-rootfs-update.tar.gz
 PACKAGE_FILE=$DEF_PACKAGE_FILE
 DEL_PACKAGE_FILE=1
 tar_opt="zxvf"
-have_valid_boarddefine=0
-have_boarddefine_utility_file=0
+boarddefine_recover_need=0
 station_change_shell="station-change.sh"
-
-boarddefine_get_file="/usr/sbin/boarddefine_get.sh"
-boarddefine_get_file_exist=0
-if [ ! -e $boarddefine_get_file ]; then
-	echo "$boarddefine_get_file do not exist!"
-	echo "try to use /etc/board/"
-	boarddefine_utility_shell="boarddefine-utility.sh"
-	boarddefine_utility_shell_full_path="/etc/board/$boarddefine_utility_shell"
-	boarddefine_change_shell="boarddefine-change.sh"
-	boarddefine_change_shell_full_path="/etc/board/$boarddefine_change_shell"
-else
-	. $boarddefine_get_file
-	boarddefine_get_file_exist=1
-fi
+boarddefine_change_shell="boarddefine-change.sh"
+board_type_key="board_type"
 
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	help
@@ -95,32 +82,13 @@ fi
 
 killapp
 
-if [ $boarddefine_get_file_exist -eq 1 ]; then
-	boarddefine_utility_shell_full_path_get
-fi
-if [ -z $boarddefine_utility_shell_full_path ]; then
-	have_boarddefine_utility_file=0
+which "$boarddefine_change_shell" > /dev/null
+if [ $? -eq 0 ]; then
+	#获取当前板载定义配置
+	generate_var_from_file "${PREV_DEFINE_KEY}" "$BOARD_INFO_SRC_FILE"
+	boarddefine_recover_need=1
 else
-	if [ $boarddefine_get_file_exist -eq 1 ]; then
-		boarddefine_change_shell_full_path_get
-	fi
-	if [ -z $boarddefine_change_shell_full_path ]; then
-		have_boarddefine_utility_file=2
-	else
-		echo "boarddefine_utility_shell_full_path=$boarddefine_utility_shell_full_path"
-		echo "boarddefine_change_shell_full_path=$boarddefine_change_shell_full_path"
-		. $boarddefine_utility_shell_full_path
-
-		#获取当前板载定义配置
-		generate_var_from_file "${PREV_DEFINE_KEY}" "$BOARD_INFO_SRC_FILE"
-
-		have_boarddefine_utility_file=1
-		if [ ${#key_array[*]} -eq 0 ]; then
-			have_valid_boarddefine=0
-		else
-			have_valid_boarddefine=1
-		fi
-	fi
+	boarddefine_recover_need=0
 fi
 
 which $station_change_shell > /dev/null
@@ -153,36 +121,33 @@ if [ $? -eq 0 ]; then
 		echo "$station_change_shell --station $current_station --boardinfo_sync_dis"
 		$station_change_shell --station $current_station --boardinfo_sync_dis
 		echo ""
-	fi
-	if [ $have_valid_boarddefine -eq 1 ]; then
-		echo "recover previous board define info"
-		config_array=()
-		index=0
-		while :;
-		do
-			#不传入board_type参数
-			if [ ! ${key_array[$index]} = "board_type" ]; then
-				config_array[$index]="--${key_array[$index]} ${value_array[$index]}"
-			fi
-			index=$(($index + 1))
-			if [ $index -ge ${#key_array[*]} ]; then
-				break
-			fi
-		done
-		echo "$boarddefine_change_shell_full_path ${config_array[*]}"
-		$boarddefine_change_shell_full_path ${config_array[*]}
 	else
-		if [ $have_boarddefine_utility_file -eq 0 ]; then
-			echo "$boarddefine_utility_shell  do not exist!"
-			echo "you must manual set baord define info by run $boarddefine_change_shell_full_path!"
+		echo "$station_change_shell  do not exist!"
+		echo "you must manual set station info by run $station_change_shell!"
+	fi
+	if [ $boarddefine_recover_need -eq 1 ]; then
+		if [ ${#key_array[*]} -eq 0 ]; then
+			echo "$BOARD_INFO_SRC_FILE file do not have a valid board define! you must manual set baord define info by run $boarddefine_change_shell!"
 		else
-			if [ $have_boarddefine_utility_file -eq 1 ]; then
-				echo "$BOARD_INFO_SRC_FILE file do not have a valid board define! you must manual set baord define info by run $boarddefine_change_shell_full_path!"
-			else
-				echo "$boarddefine_change_shell_full_path do not exist!"
-				echo "please check what happend!"
-			fi
+			echo "recover previous board define info"
+			config_array=()
+			index=0
+			while :;
+			do
+				#不传入board_type参数
+				if [ ! ${key_array[$index]} = "$board_type_key" ]; then
+					config_array[$index]="--${key_array[$index]} ${value_array[$index]}"
+				fi
+				index=$(($index + 1))
+				if [ $index -ge ${#key_array[*]} ]; then
+					break
+				fi
+			done
+			echo "$boarddefine_change_shell ${config_array[*]}"
+			$boarddefine_change_shell ${config_array[*]}
 		fi
+	else
+		echo "$boarddefine_change_shell do not exist! please check what happend!"
 	fi
 else
 	echo "rootfs update failed!"

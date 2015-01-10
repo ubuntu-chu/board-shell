@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # 修改boot环境变量
 # 
