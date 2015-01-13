@@ -30,6 +30,8 @@ tar_opt="zxvf"
 boarddefine_recover_need=0
 station_change_shell="station-change.sh"
 boarddefine_change_shell="boarddefine-change.sh"
+network_change_shell="/etc/board/network-change.sh"
+temp_network_config_flie="/var/run/$$.network_config"
 board_type_key="board_type"
 
 if [ $# -lt 1 -o $# -gt 2 ]; then
@@ -104,6 +106,11 @@ if [ $? -eq 0 ]; then
 	fi
 fi
 
+echo "get current network config"
+if [ -x $network_change_shell ]; then
+	$network_change_shell --current_simple > $temp_network_config_flie
+fi
+
 echo "rm -rf /etc/board"
 rm -rf /etc/board
 echo "tar $tar_opt $PACKAGE_FILE -C /"
@@ -115,6 +122,10 @@ if [ $? -eq 0 ]; then
 	echo "you can run /etc/board/validate-boardinfo.sh to view new boardinfo"
 	removepackage
 	echo "rootfs update success!"
+	if [ -r $temp_network_config_flie ]; then
+		echo "recover previous network config"
+		$network_change_shell --file $temp_network_config_flie
+	fi
 	if [ $station_recover_need -eq 1 ]; then
 		echo "recover previous station"
 		echo "$station_change_shell --station $current_station --boardinfo_sync_dis"

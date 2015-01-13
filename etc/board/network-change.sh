@@ -22,8 +22,10 @@ param_network="--$network_key"
 hwaddress_key="hwaddress"
 param_hwaddress="--$hwaddress_key"
 param_current="--current"
+param_current_simple="--current_simple"
 param_help="--help"
 param_debug="--debug"
+param_file="--file"
 
 DEBUG=0
 NETWORK_NAME=
@@ -38,6 +40,7 @@ cur_network_name=
 priv_temp_file=/var/run/$$.tmp_priv
 line_no=()
 nic_index=0
+network_file=
 
 section_get()
 {
@@ -47,7 +50,7 @@ section_get()
 
 help()
 {
-	echo "Usage            : $0 <$param_network_name|$param_nic_name|$param_address|$param_debug|$param_netmask|$param_gateway|$param_network|$param_hwaddress>"
+	echo "Usage            : $0 <$param_network_name|$param_nic_name|$param_address|$param_debug|$param_netmask|$param_gateway|$param_network|$param_hwaddress|$param_current>"
 	echo "Param $param_help: show help"
 	echo "Param $param_debug: enable debug"
 	echo "Param $param_network_name: network name; you can git it var boardinfo command"
@@ -57,19 +60,25 @@ help()
 	echo "Param $param_gateway: gateway"
 	echo "Param $param_network: network address"
 	echo "Param $param_hwaddress: mac address"
+	echo "Param $param_current: show current network"
 	
 	exit 0
 }
 
 show_current()
 {
+	if [ $1 = "y" ]; then
+		echo ""
+		echo "network name: $cur_network_name"
+		echo ""
+	fi
 	echo -n "" > $SHELL_TEMP_SYS_FILE
-	echo ""
-	echo "network name: $cur_network_name"
-	echo ""
 	section_get $cur_network_name $BOARD_INFO_SRC_FILE $SHELL_TEMP_SYS_FILE
 	cat $SHELL_TEMP_SYS_FILE
-	echo ""
+	if [ $1 = "y" ]; then
+		echo ""
+	fi
+	rm -rf $SHELL_TEMP_SYS_FILE
 	exit 0
 }
 
@@ -150,10 +159,17 @@ do
 			shift
 			;;
 		$param_current)
-			show_current
+			show_current y
+			;;
+		$param_current_simple)
+			show_current n
 			;;
 		$param_help)
 			help
+			;;
+		$param_file)
+			network_file="$2"
+			shift
 			;;
 		*)
 			echo "$1 : invalid param! please check!"
@@ -164,107 +180,112 @@ do
 	shift       
 done
 
+if [ -z $network_file ]; then
 
-if [ -z $NIC_NAME ]; then
-	echo "nic name is null, please assigned a valid nic name!"
-	exit 1
-fi
-
-#若制定了网络名字 则使用指定的名称
-if [ ! -z $NETWORK_NAME ]; then
-	cur_network_name=$NETWORK_NAME
-fi
-
-debug echo "cur network name: $cur_network_name"
-
-echo -n "" > $SHELL_TEMP_SYS_FILE
-section_get $cur_network_name $BOARD_INFO_SRC_FILE $SHELL_TEMP_SYS_FILE
-#获取网络配置文件总行数
-total_line=`wc -l $SHELL_TEMP_SYS_FILE|awk -F ' ' '{print $1}'`
-debug echo "total_line=$total_line"
-
-#获取网卡个数
-cat $SHELL_TEMP_SYS_FILE| egrep ".*iface.*" -n > $priv_temp_file
-nic_num=`wc -l $priv_temp_file|awk -F ' ' '{print $1}'`
-
-debug echo "nic_num=$nic_num"
-
-#判断nic名字是否合法
-grep "$NIC_NAME" $priv_temp_file > /dev/null
-if [ $? -ne 0 ]; then
-	echo "nic name($NIC_NAME) is invalid, please check!"
-	exit 1
-fi
-
-if [ "lo" = "$NIC_NAME" ]; then
-	echo "nic name($NIC_NAME) is lo, this is not allowed!"
-	exit 4
-fi
-
-#依据nic名字 找到合法的配置行数范围
-index=0
-hit=0
-nic_index=0
-while read line
-do
-	debug echo $line
-	line_no[$index]=`echo $line | cut -d ':' -f 1`
-	for item in $line;
-	do
-		if [ $item = $NIC_NAME ]; then
-			if [ $hit -eq 0 ]; then
-				hit=1		
-				nic_index=$index
-			else
-				echo "nic name($NIC_NAME) have more than one, please check what happened!"
-				exit 2
-			fi
-		fi
-	done
-	index=$(($index + 1))
-done  < $priv_temp_file
-
-debug echo ${line_no[*]}
-
-#获取修改范围
-begin_line_no=${line_no[$nic_index]}
-line_no_index=$((${#line_no[*]} - 1))
-if [ $nic_index -eq  $line_no_index ]; then
-	end_line_no=$total_line
-else
-	end_line_no=${line_no[$(($nic_index + 1))]}
-fi
-
-debug echo "begin_line_no=$begin_line_no"
-debug echo "end_line_no=$end_line_no"
-padding_space="      "
-
-if [ ! -z $ADDRESS ]; then
-	sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${address_key}".*/""${padding_space}"""${address_key}" "${ADDRESS}"/g" $SHELL_TEMP_SYS_FILE	
-fi
-
-if [ ! -z $NETMASK ]; then
-	sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${netmask_key}".*/""${padding_space}"""${netmask_key}" "${NETMASK}"/g" $SHELL_TEMP_SYS_FILE	
-fi
-
-if [ ! -z $GATEWAY ]; then
-	sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${gateway_key}".*/""${padding_space}"""${gateway_key}" "${GATEWAY}"/g" $SHELL_TEMP_SYS_FILE	
-fi
-
-if [ ! -z $NETWORK ]; then
-	sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${network_key}".*/""${padding_space}"""${network_key}" "${NETWORK}"/g" $SHELL_TEMP_SYS_FILE	
-fi
-
-if [ ! -z $HWADDRESS ]; then
-	#检测是否有ether关键字
-	ether_key="ether"
-	sed -n "$begin_line_no,$end_line_no p" $SHELL_TEMP_SYS_FILE	| grep "$ether_key"  > /dev/null
-	if [ $? -eq 0 ]; then
-		sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${hwaddress_key}".*/""${padding_space}"""${hwaddress_key}" "${ether_key}" "${HWADDRESS}"/g" $SHELL_TEMP_SYS_FILE	
-	else
-		sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${hwaddress_key}".*/""${padding_space}"""${hwaddress_key}" "${HWADDRESS}"/g" $SHELL_TEMP_SYS_FILE	
+	if [ -z $NIC_NAME ]; then
+		echo "nic name is null, please assigned a valid nic name!"
+		exit 1
 	fi
 
+	#若制定了网络名字 则使用指定的名称
+	if [ ! -z $NETWORK_NAME ]; then
+		cur_network_name=$NETWORK_NAME
+	fi
+
+	debug echo "cur network name: $cur_network_name"
+
+	echo -n "" > $SHELL_TEMP_SYS_FILE
+	section_get $cur_network_name $BOARD_INFO_SRC_FILE $SHELL_TEMP_SYS_FILE
+	#获取网络配置文件总行数
+	total_line=`wc -l $SHELL_TEMP_SYS_FILE|awk -F ' ' '{print $1}'`
+	debug echo "total_line=$total_line"
+
+	#获取网卡个数
+	cat $SHELL_TEMP_SYS_FILE| egrep ".*iface.*" -n > $priv_temp_file
+	nic_num=`wc -l $priv_temp_file|awk -F ' ' '{print $1}'`
+
+	debug echo "nic_num=$nic_num"
+
+	#判断nic名字是否合法
+	grep "$NIC_NAME" $priv_temp_file > /dev/null
+	if [ $? -ne 0 ]; then
+		echo "nic name($NIC_NAME) is invalid, please check!"
+		exit 1
+	fi
+
+	if [ "lo" = "$NIC_NAME" ]; then
+		echo "nic name($NIC_NAME) is lo, this is not allowed!"
+		exit 4
+	fi
+
+	#依据nic名字 找到合法的配置行数范围
+	index=0
+	hit=0
+	nic_index=0
+	while read line
+	do
+		debug echo $line
+		line_no[$index]=`echo $line | cut -d ':' -f 1`
+		for item in $line;
+		do
+			if [ $item = $NIC_NAME ]; then
+				if [ $hit -eq 0 ]; then
+					hit=1		
+					nic_index=$index
+				else
+					echo "nic name($NIC_NAME) have more than one, please check what happened!"
+					exit 2
+				fi
+			fi
+		done
+		index=$(($index + 1))
+	done  < $priv_temp_file
+
+	debug echo ${line_no[*]}
+
+	#获取修改范围
+	begin_line_no=${line_no[$nic_index]}
+	line_no_index=$((${#line_no[*]} - 1))
+	if [ $nic_index -eq  $line_no_index ]; then
+		end_line_no=$total_line
+	else
+		end_line_no=${line_no[$(($nic_index + 1))]}
+	fi
+
+	debug echo "begin_line_no=$begin_line_no"
+	debug echo "end_line_no=$end_line_no"
+	padding_space="      "
+
+	if [ ! -z $ADDRESS ]; then
+		sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${address_key}".*/""${padding_space}"""${address_key}" "${ADDRESS}"/g" $SHELL_TEMP_SYS_FILE	
+	fi
+
+	if [ ! -z $NETMASK ]; then
+		sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${netmask_key}".*/""${padding_space}"""${netmask_key}" "${NETMASK}"/g" $SHELL_TEMP_SYS_FILE	
+	fi
+
+	if [ ! -z $GATEWAY ]; then
+		sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${gateway_key}".*/""${padding_space}"""${gateway_key}" "${GATEWAY}"/g" $SHELL_TEMP_SYS_FILE	
+	fi
+
+	if [ ! -z $NETWORK ]; then
+		sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${network_key}".*/""${padding_space}"""${network_key}" "${NETWORK}"/g" $SHELL_TEMP_SYS_FILE	
+	fi
+
+	if [ ! -z $HWADDRESS ]; then
+		#检测是否有ether关键字
+		ether_key="ether"
+		sed -n "$begin_line_no,$end_line_no p" $SHELL_TEMP_SYS_FILE	| grep "$ether_key"  > /dev/null
+		if [ $? -eq 0 ]; then
+			sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${hwaddress_key}".*/""${padding_space}"""${hwaddress_key}" "${ether_key}" "${HWADDRESS}"/g" $SHELL_TEMP_SYS_FILE	
+		else
+			sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${hwaddress_key}".*/""${padding_space}"""${hwaddress_key}" "${HWADDRESS}"/g" $SHELL_TEMP_SYS_FILE	
+		fi
+
+	fi
+else
+	rm -rf $SHELL_TEMP_SYS_FILE
+	SHELL_TEMP_SYS_FILE=$network_file
 fi
 
 #将原先的区段删除   再在指定的位置上 添加新的定义
