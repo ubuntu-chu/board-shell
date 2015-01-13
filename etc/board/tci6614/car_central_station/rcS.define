@@ -1,0 +1,59 @@
+#
+#	rcS.define
+#
+#
+
+#cpu_id_value来源选择
+#合法来源: CPU_ID_SOURCE_CMDLINE -- 从/proc目录文件中获取
+#合法来源: CPU_ID_SOURCE_GPIO -- 从板载拨码开关中获取
+#来源：板载拨码开关
+CPU_ID_SOURCE_GPIO=0
+#来源：系统命令行
+CPU_ID_SOURCE_CMDLINE=1
+CPU_ID_SOURCE=0
+
+#board_id_value 来源选择
+#合法来源: BOARD_ID_SOURCE_CMDLINE 
+#合法来源: BOARD_ID_SOURCE_BOARD -- 从板子上读取
+#来源：从板子上读取
+BOARD_ID_SOURCE_BOARD=0
+#来源：系统命令行
+BOARD_ID_SOURCE_CMDLINE=1
+BOARD_ID_SOURCE=0
+
+#mac_batch_seq_value 来源选择
+#合法来源: MAC_BATCH_SEQ_SOURCE_CMDLINE 
+#合法来源: MAC_BATCH_SEQ_SOURCE_DEFINE
+#来源：从板子上读取
+MAC_BATCH_SEQ_SOURCE_DEFINE=0
+#来源：系统命令行
+MAC_BATCH_SEQ_SOURCE_CMDLINE=1
+MAC_BATCH_SEQ_SOURCE=0
+
+#----------------------------下面的定义不需要修改-----------------------#
+
+#调试信息输出  1使能 0禁止
+DEBUG=0
+
+#公司名称简写  此名称用于确定/proc和/opt下的入口路径名
+COMPANY=itl
+
+#board_id为空时对应的值  这个值仅仅在一个机箱具有多快板子时才有效
+#这个值需要从fpga中读出
+BOARD_ID_NONE_VALUE=7
+
+#指向系统启动脚本的链接脚本存放路径
+ETC_ENTRY_SHELL_PATH=/etc/rcS.d
+#指向app入口脚本文件的链接文件存放位置  注意：此位置可以与$ETC_ENTRY_SHELL_PATH不同
+ETC_APP_ENTRY_SHELL_PATH=/etc/rc3.d
+
+#MAC硬件地址替换匹配关键字
+MAC_HWADDRESS_KEY="hwaddress ether"
+
+#rootfs分区实际挂载名称 这个依据根文件系统类型不同 挂载名称可能不同
+ROOTFS_MOUNT_NAME_NORMAL="rootfs"
+ROOTFS_MOUNT_NAME_RECOVERY="recover-fs"
+
+#内核中rootfs分区名称
+ROOTFS_PARTION_NAME_KERNEL="rootfs"
+

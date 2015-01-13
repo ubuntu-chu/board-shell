@@ -1,0 +1,176 @@
+#
+#   板载信息配置文件--修改后请执行validate-boardinfo.sh脚本,验证修改是否正确
+#
+
+#with a space as a delimiter
+#gpios for cpu identify ; 仅当cpu_id来源为gpio(即板载拨码开关时)有效
+#注意：gpio_pin_list 的数目必须与sys_class_gpio_file_list的数目相同
+#      参数中间必须使用空格作为分隔符
+gpio_pin_list=3 4 5 6
+#gpio引脚在/sys/class/gpio/中产生的目录名称
+#注意：参数中间必须使用空格作为分隔符
+sys_class_gpio_file_list=p0.3 p0.4 p0.5 p0.6
+
+#cpu_id_force_value 当cpu_id_force_value不为空时，cpu_id会强制使用此值
+#否则 则会使用在rsS.define文件中所定义的来源值
+cpu_id_force_value=
+
+#board_id_force_value 当board_id_force_value不为空时，board_id会强制使用此值
+#否则 则会使用在rsS.define文件中所定义的来源值
+board_id_force_value=
+
+#一般情况，请不要修改此板载信息定义表
+#表中各列之间使用空格作为分隔符
+#boardinfo definition table -- start; with a space as a delimiter
+board_id    cpu_id      project       cpu_name     host_name      network	      proc           priv
+none	    0           lte           lpc3250      itl-none-0     network_none_0      proc_rru    priv_rru1
+none	    none        lte           lpc3250      itl-none-none  network_none_none   proc_rru    priv_rru1
+0           0           lte           lpc3250      itl-rru1       network_rru1         proc_rru   priv_rru1
+1	    0           lte           lpc3250      itl-rru2       network_rru2        proc_rru         priv_rru2    
+2           0           lte           lpc3250      itl-ccu        network_ccu         proc_ccu    priv_ccu
+#boardinfo definition tabel -- end
+
+#系统配置区段
+sys-config={
+	station=car_central_station
+}
+
+#预先定义区段 
+#此部分的内容会被直接写入到板载信息文件中
+#下面定义的区段 请不要更改！
+pre-define={
+	board_name=rs_ccu
+	board_type=2100
+	hardware=1
+	subhardware=1
+}
+
+#proc_none：代表不产生/proc下相应目录与文件
+#priv_none：代表不产生priv区段下相应文件
+#proc priv中的条目为key=value格式  
+#proc区段中每一个key代表/proc/$COMPANY/目录下的一个文件 value为该文件的值
+#注意：一般情况下，请不要修改
+#      
+#若value的内容中含有空格 则空格会被替换为_
+#下面定义的区段 请不要更改！
+proc_rru={
+	station=${station}
+	board_name=${board_name}
+	board_type=${board_type}
+	hardware=${hardware}
+	subhardware=${subhardware}
+}
+
+proc_ccu={
+	station=${station}
+	board_name=${board_name}
+	board_type=${board_type}
+	hardware=${hardware}
+	subhardware=${subhardware}
+}
+
+priv_rru1={
+	ipaddr=192.192.192.232
+	board_addr=fcc6
+}
+
+priv_rru2={
+	ipaddr=192.192.192.233
+	board_addr=fcc9
+}
+
+priv_ccu={
+	ipaddr=192.192.192.230
+	board_addr=fcd0
+}
+
+#MAC地址:6个字节，分成两段，各三个字节
+#第一段 一个字节用来标识生产厂商（OUI-Organistionally Unique Identifier)(本应占用三个字节;在此做变通 使用一个字节)
+#第二段 两个字节, 批次  用于定义产品的生产批次   在有些项目中 可能未使用
+#第三段 一个字节，序列号  用于定义同一生产批次下 的序列号
+#第四段 一个字节  board_id  值由board info table提供
+#第五段 一个字节  低4位值为cpu_id  高4位值用于多网卡区分 最多可识别16个网卡
+mac_oui=80
+mac_batch_seq=17:00:00
+
+#network   命名规则：network_boardid_cpuid
+#请不要修改 hwaddress这一行!
+network_rru1={
+	# The loopback interface
+	auto lo
+	iface lo inet loopback
+
+	# The eth0 interface
+	auto eth0
+	iface eth0 inet static
+	address 192.192.192.20
+	netmask 255.255.255.0
+	network 192.192.192.0
+	gateway 192.192.192.201
+	hwaddress XX:XX:XX:XX:XX:XX
+}
+
+#请不要修改 hwaddress这一行!
+network_rru2={
+	# The loopback interface
+	auto lo
+	iface lo inet loopback
+
+	# The eth0 interface
+	auto eth0
+	iface eth0 inet static
+	address 192.192.192.21
+	netmask 255.255.255.0
+	network 192.192.192.0
+	gateway 192.192.192.201
+	hwaddress XX:XX:XX:XX:XX:XX
+}
+
+#请不要修改 hwaddress这一行!
+network_ccu={
+	# The loopback interface
+	auto lo
+	iface lo inet loopback
+
+	# The eth0 interface
+	auto eth0
+	iface eth0 inet static
+	address 192.192.192.12
+	netmask 255.255.255.0
+	network 192.192.192.0
+	gateway 192.192.192.201
+	hwaddress XX:XX:XX:XX:XX:XX
+}
+
+#请不要修改 hwaddress这一行!
+network_none_0={
+	# The loopback interface
+	auto lo
+	iface lo inet loopback
+
+	# The eth0 interface
+	auto eth0
+	iface eth0 inet static
+	address 192.192.192.30
+	netmask 255.255.255.0
+	network 192.192.192.0
+	gateway 192.192.192.201
+	hwaddress XX:XX:XX:XX:XX:XX
+}
+
+#请不要修改 hwaddress这一行!
+network_none_none={
+	# The loopback interface
+	auto lo
+	iface lo inet loopback
+
+	# The eth0 interface
+	auto eth0
+	iface eth0 inet static
+	address 192.192.192.30
+	netmask 255.255.255.0
+	network 192.192.192.0
+	gateway 192.192.192.201
+	hwaddress XX:XX:XX:XX:XX:XX
+}
+

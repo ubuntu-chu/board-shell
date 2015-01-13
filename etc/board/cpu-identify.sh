@@ -3,6 +3,7 @@
 
 . /etc/board/rcS
 . /etc/board/configuration-parse.sh
+. /etc/board/auto_generate_version
 
 #保存从gpio读取的值  使用数组   注意：此处时bash的语法格式  因此此脚本在执行时 需要用Bash来执行
 CPU_ID_ARRAY=()
@@ -335,12 +336,13 @@ cpu_identify_proc(){
 	kerenl_version=$kerenl_version"`echo $uname_content|cut -d ' ' -f 9`_"
 	kerenl_version=$kerenl_version"`echo $uname_content|cut -d ' ' -f 3`"
 	echo "    kernel_version=${kerenl_version}" >> $BOARD_INFO_FILE
-	echo "    rootfs_version=${VERSION}" >> $BOARD_INFO_FILE
+	echo "    rootfs_version=${rootfs_version}" >> $BOARD_INFO_FILE
 	#get item line
-	build_time=`grep -E "^\<${BUILD_TIME_KEY}\>" $BOARD_INFO_SRC_FILE`
-	if [ ! -z "$build_time" ]; then
-		echo "    $build_time" >> $BOARD_INFO_FILE
-	fi
+	#build_time=`grep -E "^\<${BUILD_TIME_KEY}\>" $BOARD_INFO_SRC_FILE`
+	#if [ ! -z "$build_time" ]; then
+	#	echo "    $build_time" >> $BOARD_INFO_FILE
+	#fi
+	echo "    rootfs_img_build_time=${rootfs_img_build_time}" >> $BOARD_INFO_FILE
 	#获取应用中定义的debug文件
 	echo -n "" > $SHELL_DEBUG_FILE
 	app_define_files_add "debug" "$SHELL_DEBUG_FILE" "$SHELL_DEBUG_FILE"

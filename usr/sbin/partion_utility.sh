@@ -58,14 +58,19 @@ boardinfo_define_copy()
 	partion_find "$1"
 	if [ $? -eq 0 ]; then
 		mount_point="/mnt/src"
-		boardinfo_define_file="/etc/board/boardinfo.define"
+		etc_board_dir="/etc/board"
+		boardinfo_define_file="$etc_board_dir/boardinfo.define"
 		cat /proc/mounts|awk '{print $2}'|grep "$mount_point" > /dev/null
 		if [ $? -eq 0  ]; then
 			echo "$mount_point mount! now umount it!"
 			execute_cmd umount $mount_point
 		fi
+		if [ ! -z $SYS_STATION_FILE ]; then
+			station=`cat $SYS_STATION_FILE`
+		fi
 		execute_cmd mount -t jffs2 -o sync $PARTION_DEV_BLOCK_FILE $mount_point
-		execute_cmd cp $boardinfo_define_file $mount_point/$boardinfo_define_file
+		execute_cmd rm -rf $mount_point/$etc_board_dir/
+		execute_cmd cp -ar $etc_board_dir/ $mount_point/etc/
 		execute_cmd umount $mount_point
 	fi
 }

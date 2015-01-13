@@ -29,12 +29,20 @@ configuration_parse(){
 
 	case "$1" in
 		"board_id")
-			#解析出slot_id值   slot_id在0x05寄存器的低三位
-			proc_line_return $CASE_SLOT_REG $2
-			if [ $? -ne 0 ]; then
-				return 3
+			#判断是否显示指定了board_id
+			proc_line_return "board_id" $2
+			if [ $? -eq 0 ]; then
+				BOARD_ID=${PROC_LINE_VALUE}
+			else
+			#没有则解析slot_id值
+				BOARD_ID=$((${PROC_LINE_VALUE} & 0x07))
+				#解析出slot_id值   slot_id在0x05寄存器的低三位
+				proc_line_return $CASE_SLOT_REG $2
+				if [ $? -ne 0 ]; then
+					return 3
+				fi
+				BOARD_ID=$((${PROC_LINE_VALUE} & 0x07))
 			fi
-			BOARD_ID=$((${PROC_LINE_VALUE} & 0x07))
 			;;
 
 		"all")
@@ -54,16 +62,20 @@ configuration_parse(){
 			let "value=$value >> 8"
 			echo "        board_type=${value}" >> $3
 
+			#逻辑版本号   bit8-bit15 高版本号  bit0-7 低版本号
 			proc_line_return $FPGA_VER_REG $2
-			PROC_LINE_VALUE=`printf "0x%04x" ${PROC_LINE_VALUE}`
-			echo "        logic_version=${PROC_LINE_VALUE}" >> $3
+			hi_value=$((${PROC_LINE_VALUE} & 0xff00))
+			let "hi_value=$hi_value >> 8"
+
+			value=$((${PROC_LINE_VALUE} & 0x00ff))
+			echo "        logic_version=V${hi_value}.${value}" >> $3
 
 			proc_line_return $VER_YEAR_REG $2
-			PROC_LINE_VALUE=`printf "0x%04x" ${PROC_LINE_VALUE}`
+			PROC_LINE_VALUE=`printf "%04x" ${PROC_LINE_VALUE}`
 			echo "        logic_year=${PROC_LINE_VALUE}" >> $3
 
 			proc_line_return $VER_DATE_REG $2
-			PROC_LINE_VALUE=`printf "0x%04x" ${PROC_LINE_VALUE}`
+			PROC_LINE_VALUE=`printf "%04x" ${PROC_LINE_VALUE}`
 			echo "        logic_date=${PROC_LINE_VALUE}" >> $3
 			proc_line_return $CASE_SLOT_REG $2
 			#槽位号

@@ -35,7 +35,7 @@ HWADDRESS=
 NIC_NAME=
 
 cur_network_name=
-priv_temp_file=$0.tmp
+priv_temp_file=/var/run/$$.tmp_priv
 line_no=()
 nic_index=0
 
@@ -77,9 +77,26 @@ if [ $# -eq 0 ]; then
 	help
 fi
 
-if [ -z $SHELL_TEMP_SYS_FILE ]; then
-	SHELL_TEMP_SYS_FILE=/var/run/sys-temporary-file
+station_change_shell="station-change.sh"
+have_valid_station=0
+which $station_change_shell > /dev/null
+if [ $? -eq 0 ]; then
+	#获取当前配置信息
+	current_station=`$station_change_shell --current_simple`
+	if [ $? -eq 0 ]; then
+		if [ ! -z $current_station ]; then
+			#具有合法值 
+			have_valid_station=1
+		fi
+	fi
 fi
+
+if [ $have_valid_station -eq 0 ]; then
+	echo "system do not have a valid station! boardinfo write error! please check what happened!"
+	exit 1
+fi
+
+SHELL_TEMP_SYS_FILE=/var/run/$$.tmp
 if [ -z $BOARD_INFO_FILE ]; then
 	BOARD_INFO_FILE=/var/run/boardinfo
 fi
@@ -220,7 +237,7 @@ fi
 
 debug echo "begin_line_no=$begin_line_no"
 debug echo "end_line_no=$end_line_no"
-padding_space="    "
+padding_space="      "
 
 if [ ! -z $ADDRESS ]; then
 	sed -i "$begin_line_no,$end_line_no s/^[ \t ]*"${address_key}".*/""${padding_space}"""${address_key}" "${ADDRESS}"/g" $SHELL_TEMP_SYS_FILE	
@@ -250,6 +267,10 @@ if [ ! -z $HWADDRESS ]; then
 
 fi
 
+#将原先的区段删除   再在指定的位置上 添加新的定义
+#sed -i "/^"${cur_network_name}"={/,/^\}/ d\
+#		;"${line_no}" r "${SHELL_TEMP_SYS_FILE}"" $BOARD_INFO_SRC_FILE
+
 #更改boardinfo.define文件中相应配置
 
 value=`grep -n "${cur_network_name}={"  $BOARD_INFO_SRC_FILE`
@@ -262,11 +283,12 @@ line_no=`echo $value|cut -d ':' -f1`
 debug echo "match line no = $line_no"
 line_no=$(($line_no-1))
 
-#将原先的区段删除   再在指定的位置上 添加新的定义
+echo "modify file:${BOARD_ENTRY_SHELL_PATH}/${current_station}/${BOARD_INFO_DEFINE_FILE}"
+(cd ${BOARD_ENTRY_SHELL_PATH}&&ln -sf ${current_station}/${BOARD_INFO_DEFINE_FILE} ${BOARD_INFO_DEFINE_FILE}) 
 sed -i "/^"${cur_network_name}"={/,/^\}/ d\
-		;"${line_no}" r "${SHELL_TEMP_SYS_FILE}"" $BOARD_INFO_SRC_FILE
-
+		;"${line_no}" r "${SHELL_TEMP_SYS_FILE}"" ${BOARD_ENTRY_SHELL_PATH}/${current_station}/${BOARD_INFO_DEFINE_FILE}
 rm -rf $priv_temp_file
+rm -rf $SHELL_TEMP_SYS_FILE
 
 echo "network change success"
 echo "you can run /etc/board/validate-boardinfo.sh to view new boardinfo"

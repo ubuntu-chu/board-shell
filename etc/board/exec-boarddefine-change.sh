@@ -665,7 +665,7 @@ while :;
 do
 	config=${new_config_array[$index]}
 	echo $config
-	echo "    $config" >> $temp_file
+	echo "      $config" >> $temp_file
 
 	index=$(($index + 1))
 	if [ $index -ge ${#new_config_array[*]} ]; then
@@ -690,9 +690,31 @@ debug echo "match line no = $line_no"
 line_no=$(($line_no-1))
 
 #将原先的区段删除   再在指定的位置上 添加新的定义
-sed -i "/^"${PREV_DEFINE_KEY}"={/,/^\}/ d\
-		;"${line_no}" r "${temp_file}"" $BOARD_INFO_SRC_FILE
+#sed -i "/^"${PREV_DEFINE_KEY}"={/,/^\}/ d\
+#		;"${line_no}" r "${temp_file}"" $BOARD_INFO_SRC_FILE
 
+station_change_shell="station-change.sh"
+have_valid_station=0
+which $station_change_shell > /dev/null
+if [ $? -eq 0 ]; then
+	#获取当前配置信息
+	current_station=`$station_change_shell --current_simple`
+	if [ $? -eq 0 ]; then
+		if [ ! -z $current_station ]; then
+			#具有合法值 
+			have_valid_station=1
+		fi
+	fi
+fi
+
+if [ $have_valid_station -eq 0 ]; then
+	echo "system do not have a valid station! boardinfo write error! please check what happened!"
+else
+	echo "modify file:${BOARD_ENTRY_SHELL_PATH}/${current_station}/${BOARD_INFO_DEFINE_FILE}"
+	(cd ${BOARD_ENTRY_SHELL_PATH}&&ln -sf ${current_station}/${BOARD_INFO_DEFINE_FILE} ${BOARD_INFO_DEFINE_FILE}) 
+	sed -i "/^"${PREV_DEFINE_KEY}"={/,/^\}/ d\
+			;"${line_no}" r "${temp_file}"" ${BOARD_ENTRY_SHELL_PATH}/${current_station}/${BOARD_INFO_DEFINE_FILE}
+fi
 
 #删除临时文件
 rm -rf $temp_file

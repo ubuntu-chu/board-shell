@@ -91,18 +91,17 @@ else
 	boarddefine_recover_need=0
 fi
 
+station_recover_need=0
 which $station_change_shell > /dev/null
 if [ $? -eq 0 ]; then
-	station_recover_need=1
 	#获取当前配置信息
-	current_station=`station-change.sh --current | awk -F '=' '/^station/ {print $2}'`
-	if [ -z $current_station ]; then
-		#没有合法值 相当于不用进行设置
-		station_recover_need=0
+	current_station=`$station_change_shell --current_simple`
+	if [ $? -eq 0 ]; then
+		if [ ! -z $current_station ]; then
+			#有合法值  则需要恢复station值
+			station_recover_need=1
+		fi
 	fi
-else
-
-	station_recover_need=0
 fi
 
 echo "rm -rf /etc/board"

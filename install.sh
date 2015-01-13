@@ -4,8 +4,11 @@ LPC3250_KEY="lpc3250"
 TCI6614_KEY="tci6614"
 ALL_KEY="all"
 UPDATE_KEY="update"
+LPC3250_UPDATE_KEY="update-lpc3250"
+TCI6614_UPDATE_KEY="update-tci6614"
 PACK_SHELL="pack-shell"
 
+version_file=etc/board/auto_generate_version
 
 ETC_BOARD_SUFFIX="etc/board"
 ETC_RCD_SUFFIX="etc/rc.d"
@@ -72,6 +75,25 @@ install_files()
 		   cp -a $i $3/
 		   #echo -n ""
 	done
+
+	now_path=`pwd`
+	cd $1/$2
+	#拷贝目录
+	dir_list=`find . -type d`
+	#echo "dir-list: $dir_list"
+	for i in $dir_list;
+	do
+		i=`basename $i`
+		#忽略当前目录
+		if [ $i = "." ]; then
+			continue
+		fi
+		[ -d $3/$i ] || mkdir -p $3/$i
+		echo "cp -ra $i $3/"
+		cp -ra $i $3/
+		echo ""
+	done
+	cd $now_path
 }
 
 install_link()
@@ -94,7 +116,7 @@ install_usr_share()
 }
 
 help(){
-	echo "Usage                 : $0 <$LPC3250_KEY|$TCI6614_KEY|$ALL_KEY|$PACK_SHELL>"
+	echo "Usage                 : $0 <$LPC3250_KEY|$TCI6614_KEY|$ALL_KEY|$LPC3250_UPDATE_KEY|$TCI6614_UPDATE_KEY|$UPDATE_KEY|$PACK_SHELL>"
 	exit 1
 }
 
@@ -131,14 +153,6 @@ install_rootfs_update_tci6614()
 
 	cp -r $rootfs_common_path/etc/$cpu_name_tci6614/* $rootfs_update_path/etc/
 	cp $rootfs_common_path/etc/$cpu_name_tci6614/init.d/rc $rootfs_update_path/$ETC_INITD_SUFFIX
-
-	#更新build_time
-	boardinfo_define_file="boardinfo.define"
-	BUILD_TIME_KEY="rootfs_img_build_time="
-	BUILD_TIME=`date +"%F_%T"`
-	echo "$SUDO_PASSWD" | sudo -S sed -i -e "s/^$BUILD_TIME_KEY.*$/$BUILD_TIME_KEY$BUILD_TIME/g" $rootfs_update_path_etc_board/$boardinfo_define_file
-	#更新根文件系统中的文件
-	cp $rootfs_update_path_etc_board/$boardinfo_define_file $TCI6614_ETC_BOARD_DEST_PATH/$boardinfo_define_file
 
 	cd $rootfs_update_path
 	tar zcf $rootfs_update_tar_name ./*
@@ -179,14 +193,6 @@ install_rootfs_update()
 	cp -r $rootfs_common_path/etc/$cpu_name_lpc3250/* $rootfs_update_path/etc/
 	cp $rootfs_common_path/etc/$cpu_name_lpc3250/rc.d/rcS $rootfs_update_path/$ETC_RCD_SUFFIX
 
-	#更新build_time
-	boardinfo_define_file="boardinfo.define"
-	BUILD_TIME_KEY="rootfs_img_build_time="
-	BUILD_TIME=`date +"%F_%T"`
-	echo "$SUDO_PASSWD" | sudo -S sed -i -e "s/^$BUILD_TIME_KEY.*$/$BUILD_TIME_KEY$BUILD_TIME/g" $rootfs_update_path_etc_board/$boardinfo_define_file
-	#更新根文件系统中的文件
-	cp $rootfs_update_path_etc_board/$boardinfo_define_file $LPC3250_ETC_BOARD_DEST_PATH/$boardinfo_define_file
-
 	cd $rootfs_update_path
 	tar zcf $rootfs_update_tar_name ./*
 	cd ..
@@ -206,18 +212,29 @@ install_rootfs_update()
 install_lpc3250_misc()
 {
 	#将脚本拷贝到本地PC中
-	echo "echo "$SUDO_PASSWD" | sudo -S cp -r $LPC3250_ETC_BOARD_DEST_PATH/* /etc/board/"
-	echo "$SUDO_PASSWD" | sudo -S cp -r $LPC3250_ETC_BOARD_DEST_PATH/* /etc/board/
+	echo "echo "$SUDO_PASSWD" | sudo -S cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/* /etc/board/"
+	echo "$SUDO_PASSWD" | sudo -S cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/* /etc/board/
+
+	station_list=`echo "$SUDO_PASSWD" | sudo -S /etc/board/station-change.sh --info_simple`
 
 	#将boarddefine下的脚本拷贝到app安装包中
-	for dir in /home/chum/work/lte/lpc3250/opt-ccu/opt/itl/sbin/ /home/chum/work/lte/lpc3250/opt-rru/opt/itl/sbin/;
+	for dir in /home/chum/work/lte/lpc3250/application/lpc3250/install/opt-ccu/opt/itl/sbin/ /home/chum/work/lte/lpc3250/application/lpc3250/install/opt-rru/opt/itl/sbin/;
 	do
 		#echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/exec-boarddefine-change.sh  $dir"
 		#cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/exec-boarddefine-change.sh  $dir
 		echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/exec-boarddefine-change.sh  $dir"
 		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/exec-boarddefine-change.sh  $dir
 		echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/rcS.board  $dir"
-		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/rcS.board  $dir
+		#cp -ar $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/rcS.board  $dir
+
+		#for station in $station_list; 
+		#do
+		#	[ -d $dir/$station ] || mkdir -p $dir/$station
+		#	echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/$station/rcS.board  $dir/$station"
+		#	cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/$station/rcS.board  $dir/$station
+		#done
+		
+		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/car_central_station/rcS.board  $dir
 	done
 }
 
@@ -227,7 +244,9 @@ install_lpc3250()
 	mkdir -p $LPC3250_ETC_BOARD_PRIVATE_DEST_PATH
 	install_files $ETC_BOARD_SRC_PATH $cpu_name_lpc3250 $LPC3250_ETC_BOARD_DEST_PATH
 	install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_lpc3250 $LPC3250_ETC_BOARD_PRIVATE_DEST_PATH
+	#set -x
 	install_files $USR_SBIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_USR_SBIN_DEST_PATH
+	#set +x
 	install_files $BIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_BIN_DEST_PATH
 	install_files $SBIN_SRC_PATH $cpu_name_lpc3250 $LPC3250_SBIN_DEST_PATH
 	install_usr_share $USR_SHARE_SRC_PATH $LPC3250_USR_SHARE_DEST_PATH
@@ -255,10 +274,18 @@ if [ $# -ne 1 ]; then
 fi
 
 #修改board-shell脚本
-version="v1.0.`svn info | sed -n 's,^版本: \(.*\),\1,p'`"
-version_key="VERSION"
-rcs_file=etc/board/rcS
-sed -i "s/.*"${version_key}".*/"${version_key}"=\""${version}"\"/" $rcs_file
+version="v1.0.`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
+echo "rootfs_version=${version}" > $version_file
+#更新build_time
+#	boardinfo_define_file="boardinfo.define"
+#	BUILD_TIME_KEY="rootfs_img_build_time="
+#	BUILD_TIME=`date +"%F_%T"`
+#	echo "$SUDO_PASSWD" | sudo -S sed -i -e "s/^$BUILD_TIME_KEY.*$/$BUILD_TIME_KEY$BUILD_TIME/g" $rootfs_update_path_etc_board/$boardinfo_define_file
+#	#更新根文件系统中的文件
+#	cp $rootfs_update_path_etc_board/$boardinfo_define_file $LPC3250_ETC_BOARD_DEST_PATH/$boardinfo_define_file
+
+echo "rootfs_img_build_time=`date +"%F_%T"`" >> $version_file
+
 
 case "$1" in
 	$LPC3250_KEY)
@@ -280,6 +307,12 @@ case "$1" in
 
 	$UPDATE_KEY)
 		install_rootfs_update
+		install_rootfs_update_tci6614
+		;;
+	$LPC3250_UPDATE_KEY)
+		install_rootfs_update
+		;;
+	$TCI6614_UPDATE_KEY)
 		install_rootfs_update_tci6614
 		;;
 

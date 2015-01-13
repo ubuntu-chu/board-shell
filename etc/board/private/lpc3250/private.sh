@@ -4,13 +4,14 @@
 # 
 #
 
+#里面间接source /etc/board/rcS
 . /etc/board/private/bootenv-utility.sh
 
+bootloader_params_modify()
+{
 
-if [ "$1" = "start" ]; then
 	key_list="board_addr ipaddr"
 
-	echo "Starting special private..."
 
 	#处理uboot环境变量  更改uboot环境变量中的ipaddr   board_addr	
 	for key in $key_list
@@ -30,8 +31,38 @@ if [ "$1" = "start" ]; then
 			exit 1
 		fi
 	done
-fi
+}
 
+if [ "$1" = "start" ]; then
+	echo "Starting special private..."
+
+	#获取站型信息
+	if [ ! -z $SYS_STATION_FILE ]; then
+		[ -r $SYS_STATION_FILE ] && station=`cat $SYS_STATION_FILE`
+    fi
+	[ -z $station ] && station=$CAR_CENTRAL_STATION
+
+	echo "station=$station"
+
+	case "$station" in
+		"$CAR_CENTRAL_STATION")
+			bootloader_params_modify
+			;;
+
+		"$RELAY_STATION")
+			echo ""
+			;;
+
+		"$METROCELL")
+			echo ""
+			;;
+
+		*)
+			echo "invalid station[$station]"
+			;;
+	esac
+
+fi
 
 exit 0
 

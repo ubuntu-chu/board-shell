@@ -82,6 +82,14 @@ hardwarelist_get()
 	BOARD_HARDWARE_LIST=`sed -n '/^--hardware.*: \+'${1}'/ p' $BOARDDEFINE_INFO_FILE | awk -F ':' '{print $2}' | awk -F '-' '{print $2}'`
 }
 
+svn_repository_info_get()
+{
+	cd $1
+	svn_version="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
+	svn_modify_time=`svn info | sed -n 's,^最后修改的时间: \(.*\)+\(.*\),\1,p'`
+	cd $NOW_PATH
+}
+
 applicationinfo_write()
 {
 	sys_debug_file="$APP_DIR/$SBIN_PATH/auto_generate_sys_debug"
@@ -89,56 +97,53 @@ applicationinfo_write()
 	echo "applicationinfo_write enter dir:$1"
 
 	#获取cmdline版本
-	cd $1/cmdline/
-	app_package_cmdline_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
-	cd $NOW_PATH
+	svn_repository_info_get $1/cmdline/
+	app_package_cmdline_ver=$svn_version
 	#获取include版本
-	cd $1/include/
-	app_package_include_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
-	cd $NOW_PATH
+	svn_repository_info_get $1/include/
+	app_package_include_ver=$svn_version
 	#获取libs版本
-	cd $1/libs/
-	app_package_libs_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
-	cd $NOW_PATH
+	svn_repository_info_get $1/libs/
+	app_package_libs_ver=$svn_version
+	#获取modules版本
+	svn_repository_info_get $1/modules/
+	app_package_modules_ver=$svn_version
 
 	case $2 in
 		ccu)
 			#获取ccu版本
-			cd $1/CCU/
-			app_package_bin_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
+			svn_repository_info_get $1/CCU/
+			app_package_bin_ver=$svn_version
 			cd $NOW_PATH
 			#获取install版本
-			#cd $1/install/CCU/
-			#app_package_install_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
-			cd $NOW_PATH
+			svn_repository_info_get $1/install/opt-ccu/
+			#app_package_install_ver=$svn_version
 			;;
 
 		rru)
 			#获取rru版本
-			cd $1/RRU/
-			app_package_bin_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
-			cd $NOW_PATH
+			svn_repository_info_get $1/RRU/
+			app_package_bin_ver=$svn_version
 			#获取install版本
-			#cd $1/install/RRU/
-			#app_package_install_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
-			cd $NOW_PATH
+			svn_repository_info_get $1/install/opt-rru/
+			#app_package_install_ver=$svn_version
 			;;
 		*)
 			echo "applicationinfo_write: invalid param $2"
 			;;
 	esac
-	cd $1
 	#获取svn版本相关信息
-	app_package_ver="`svn info | sed -n 's,^最后修改的版本: \(.*\),\1,p'`"
-	app_modify_time=`svn info | sed -n 's,^最后修改的时间: \(.*\)+\(.*\),\1,p'`
+	svn_repository_info_get $1
+	app_package_ver=$svn_version
+	app_modify_time=$svn_modify_time
 	echo "applicationinfo_write exit dir:$1"
-	cd $NOW_PATH
 	
 	#更新应用程序信息
 	echo -n "" > "$sys_debug_file"
 	echo "${APP_PACKAGE_VERSION_KEY}=${ver_prefix}${app_package_ver}" >> "$sys_debug_file"
 	echo "application_package_bin_version=${ver_prefix}${app_package_bin_ver}" >> "$sys_debug_file"
 	echo "application_package_lib_version=${ver_prefix}${app_package_libs_ver}" >> "$sys_debug_file"
+	echo "application_package_modules_version=${ver_prefix}${app_package_modules_ver}" >> "$sys_debug_file"
 	echo "application_package_intall_version=${ver_prefix}${app_package_install_ver}" >> "$sys_debug_file"
 	echo "application_package_cmdline_version=${ver_prefix}${app_package_cmdline_ver}" >> "$sys_debug_file"
 	echo "application_package_include_version=${ver_prefix}${app_package_include_ver}" >> "$sys_debug_file"

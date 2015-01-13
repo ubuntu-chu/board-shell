@@ -15,8 +15,12 @@ if [ ! -e $etc_board_rcs_file ]; then
 fi
 . $etc_board_rcs_file
 
+[ -z $CAR_CENTRAL_STATION ] && CAR_CENTRAL_STATION="car_central_station"
+[ -z $RELAY_STATION ] && RELAY_STATION="relay_station"
+[ -z $METROCELL ] && METROCELL="metrocell"
+
 #站型定义
-station_array=("car_central_station" "relay_station" "metrocell")
+station_array=($CAR_CENTRAL_STATION $RELAY_STATION $METROCELL)
 
 skip_key="skip"
 #数组索引
@@ -25,12 +29,15 @@ param_station="--station"
 param_debug="--debug"
 param_help="--help"
 param_current="--current"
+param_current_simple="--current_simple"
 param_info="--info"
+param_info_simple="--info_simple"
 param_boardinfo_sync_dis="--boardinfo_sync_dis"
 param_recovery_rootfs_sync="--recovery_rootfs_sync"
 cur_station=
 recovery_rootfs_sync=0
 boardinfo_sync_dis=0
+now_path=`pwd`
 
 help()
 {
@@ -111,11 +118,19 @@ do
 			show_current
 			exit 0
 			;;
+		$param_current_simple)
+			echo "$cur_station"
+			exit 0
+			;;
 		$param_help)
 			help
 			;;
 		$param_info)
 			show_info
+			;;
+		$param_info_simple)
+			echo "${station_array[*]}"
+			exit 0
 			;;
 		$param_station)
 			assigned_station="$2"
@@ -179,12 +194,28 @@ echo "-----------------new station------------------"
 
 echo "station=$new_station"
 
+rcs_board_file="rcS.board"
+cd $BOARD_ENTRY_SHELL_PATH
+#更改$BOARD_ENTRY_SHELL_PATH下的相关链接文件  
+for file in "boardinfo.define" "rcS.define" "$rcs_board_file";
+do
+	ln -sf $new_station/$file $file
+done
+
 if [ ! $new_station = $cur_station ]; then
-	sed -i "/^"${SYS_CONFIG_KEY}"={/,/^\}/ s/.*"${STATION_KEY}".*/    "${STATION_KEY}"="${new_station}"/g" $BOARD_INFO_SRC_FILE
+	#sed -i "/^"${SYS_CONFIG_KEY}"={/,/^\}/ s/.*"${STATION_KEY}".*/    "${STATION_KEY}"="${new_station}"/g" $BOARD_INFO_SRC_FILE
+
+	#更改/opt/itl/sbin下连接文件
+	#先判断rcS.board是否为链接文件
+#	cd /opt/itl/sbin
+#	if [ -L $rcs_board_file ]; then
+#		ln -sf $new_station/$rcs_board_file $rcs_board_file
+#	fi
+	cd $now_path
 
 	if [ $boardinfo_sync_dis -eq 0 ]; then
-		echo "execute </etc/board/cpu-identify.sh start> to update boardinfo file"
-		/etc/board/cpu-identify.sh start > /dev/null
+		echo "execute <$BOARD_ENTRY_SHELL_PATH/cpu-identify.sh start> to update boardinfo file"
+		$BOARD_ENTRY_SHELL_PATH/cpu-identify.sh start > /dev/null
 	fi
 
 	if [ $recovery_rootfs_sync -eq 1 ]; then

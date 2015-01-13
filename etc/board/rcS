@@ -43,7 +43,9 @@ APP_PROFILE_PATH=$APP_ENTRY_PATH/etc/profile
 
 #board 下脚本目录
 BOARD_ENTRY_SHELL_PATH=/etc/board
+BOARD_INFO_DEFINE_FILE="boardinfo.define"
 BOARD_ENTRY_PRIVATE_SHELL_PATH=${BOARD_ENTRY_SHELL_PATH}/private
+BOARD_INFO_SRC_FILE="${BOARD_ENTRY_SHELL_PATH}/${BOARD_INFO_DEFINE_FILE}"
 #proc内核模块名称
 PROC_MODULE=proc_module
 
@@ -67,13 +69,13 @@ SHELL_TEMP_SYS_FILE=/var/run/sys-temporary-file
 
 
 #boardinfo file
-BOARD_INFO_SRC_FILE="/etc/board/boardinfo.define"
 export BOARD_INFO_FILE="/var/run/boardinfo"
 SYS_CONFIG_KEY="sys-config"
 PREV_DEFINE_KEY="pre-define"
 PROJECT_KEY="project"
 STATION_KEY="station"
 BOARD_TYPE_KEY="board_type"
+BOARD_NAME_KEY="board_name"
 CPU_ID_KEY="cpu_id"
 BOOTLOADER_VER_KEY="bootloader_ver"
 BOARD_ID_KEY="board_id"
@@ -84,6 +86,13 @@ PRIV_KEY="priv"
 PRIV_NONE_VALUE="priv_none"
 ERROR_KEY="error"
 CPU_NAME_KEY="cpu_name"
+
+#根文件系统导出的文件
+export SYS_STATION_FILE="/proc/$COMPANY/$STATION_KEY"
+export SYS_BOARD_NAME_FILE="/proc/$COMPANY/$BOARD_NAME_KEY"
+export SYS_BOARD_TYPE_FILE="/proc/$COMPANY/$BOARD_TYPE_KEY"
+export SYS_HARDWARE_FILE="/proc/$COMPANY/hardware"
+export SYS_SUBHARDWARE_FILE="/proc/$COMPANY/subhardware"
 
 #board_id为空时对应的boardinfo table中文本
 BOARD_ID_NONE_TEXT=none
@@ -101,11 +110,15 @@ HOSTNAME_DEST_FILE="/etc/hostname"
 NETWORK_KEY="network"
 HOSTNAME_KEY="host_name"
 CPU_ID_FORCE_VALUE_KEY="cpu_id_force_value"
-BUILD_TIME_KEY="rootfs_img_build_time"
 
 MAC_OUI_KEY="mac_oui"
 MAC_BATCH_SEQ_KEY="mac_batch_seq"
 MAC_VALUE_KEY="XX"
+
+#站类型定义
+export CAR_CENTRAL_STATION="car_central_station"
+export RELAY_STATION="relay_station"
+export METROCELL="metrocell"
 
 #cpu name define
 CPU_NAME=""
