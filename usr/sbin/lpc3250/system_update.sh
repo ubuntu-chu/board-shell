@@ -123,7 +123,6 @@ case $3 in
 		#升级bootloader
 		execute_cmd bootloader_partion_flash.sh $TFTP_SERVER_IP $DEFAULT_BOOTLOADER_3IN1_PACKAGE
 		#重烧写恢复所用根文件系统  原因在于恢复所用根文件系统所有使用的uboot变量在新的uboot变量中可能已经不存在了 所以导致恢复所用根文件系统无法启动
-		#TO DO:恢复所用根文件系统烧写完成后 应将其挂载到目录下 依据当前板载定义配置修改其下的/etc/board/boardinfo.define文件
 		execute_cmd recover_rootfs_partion_flash.sh $TFTP_SERVER_IP $DEFAULT_RECOVER_ROOTFS_PACKAGE
 		#拷贝boardinfo.define文件
 		boardinfo_define_copy  $FLASH_RECOVER_ROOTFS_PARTION_NAME

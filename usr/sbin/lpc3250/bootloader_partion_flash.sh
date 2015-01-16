@@ -19,7 +19,7 @@ DEF_FLASH_FILE="itl-lpc3250-bootloader-3in1.bin"
 FLASH_FILE=$DEF_FLASH_FILE
 DEL_FLASH_FILE=1
 FLASH_MTD_PARTION_NAME="norflash:bootloader-3in1"
-DEL_BOOTENV_PARTION=1
+DEL_BOOTENV_PARTION=0
 
 if [ $# -lt 1 -o $# -gt 2 ]; then
 	help
@@ -71,6 +71,8 @@ if [ $? -eq 0 ]; then
 	remove_flashfile
 	if [ $DEL_BOOTENV_PARTION -eq 1 ]; then 
 		bootenv_partion_flash.sh	
+	else
+		echo "if you need to erase boot env, please run bootenv_partion_flash.sh"
 	fi
 fi
 

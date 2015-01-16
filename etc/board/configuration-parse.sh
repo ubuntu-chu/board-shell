@@ -12,9 +12,10 @@ configuration_parse(){
 	#解析系统寄存器版本 bit: 15:12
 	proc_line_return $SYS_REG_VER_REG $2
 	if [ $? -ne 0 ]; then
-		return 2
-	fi
-	SYS_REG_VER=$((${PROC_LINE_VALUE} & 0xf000))
+		SYS_REG_VER=0
+	else
+		SYS_REG_VER=$((${PROC_LINE_VALUE} & 0xf000))
+    fi
 	let "SYS_REG_VER=$SYS_REG_VER >> 12"
 	debug echo "sys_reg_ver = $SYS_REG_VER"
 
