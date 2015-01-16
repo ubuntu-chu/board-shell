@@ -28,7 +28,7 @@ BOARD_ID_SOURCE=0
 MAC_BATCH_SEQ_SOURCE_DEFINE=0
 #来源：系统命令行
 MAC_BATCH_SEQ_SOURCE_CMDLINE=1
-MAC_BATCH_SEQ_SOURCE=0
+MAC_BATCH_SEQ_SOURCE=1
 
 #----------------------------下面的定义不需要修改-----------------------#
 

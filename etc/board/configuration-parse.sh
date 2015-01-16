@@ -43,6 +43,14 @@ configuration_parse(){
 				fi
 				BOARD_ID=$((${PROC_LINE_VALUE} & 0x07))
 			fi
+			#判断是否是虚假的配置信息  虚假的配置信息仅用于提供一些特定信息
+			proc_line_return "fake_config" $2
+			if [ $? -eq 0 ]; then
+				if [ ${PROC_LINE_VALUE} -eq 1 ]; then
+				#存在虚假配置信息 则返回非零值
+					return 4
+				fi
+			fi
 			;;
 
 		"all")
