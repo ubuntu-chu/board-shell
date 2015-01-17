@@ -3,6 +3,7 @@
 #boardname definition table -- start; with a space as a delimiter
 board_name             board_type       hardware             
 rfu_rru                1000             rfu_rru_hardware_3
+mesh_rfu_rru           1001             mesh_rfu_rru_hardware_1
 cs_rfu_rru             1100             cs_rfu_rru_hardware_1
 ss_rfu_rru             1200             ss_rfu_rru_hardware_1
 ifu_ccu                2000             ifu_ccu_hardware_1
@@ -45,6 +46,14 @@ rfu_rru_subhardware_def_1={
 	type=detach
 	default=1
 	define=rfu_rru_subhardware_define
+}
+
+#---------------------------------------
+
+mesh_rfu_rru_hardware_1={
+	value=1
+	default=yes
+	config=rfu_rru_subhardware_def_1:lmk04806_clkin_def_10M:rf2052_def_400M
 }
 
 #---------------------------------------

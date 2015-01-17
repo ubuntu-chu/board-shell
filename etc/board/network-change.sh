@@ -86,24 +86,25 @@ if [ $# -eq 0 ]; then
 	help
 fi
 
-station_change_shell="station-change.sh"
-have_valid_station=0
-which $station_change_shell > /dev/null
-if [ $? -eq 0 ]; then
-	#获取当前配置信息
-	current_station=`$station_change_shell --current_simple`
-	if [ $? -eq 0 ]; then
-		if [ ! -z $current_station ]; then
-			#具有合法值 
-			have_valid_station=1
-		fi
-	fi
-fi
-
-if [ $have_valid_station -eq 0 ]; then
-	echo "system do not have a valid station! boardinfo write error! please check what happened!"
-	exit 1
-fi
+#此部分暂时不再使用
+#station_change_shell="station-change.sh"
+#have_valid_station=0
+#which $station_change_shell > /dev/null
+#if [ $? -eq 0 ]; then
+#	#获取当前配置信息
+#	current_station=`$station_change_shell --current_simple`
+#	if [ $? -eq 0 ]; then
+#		if [ ! -z $current_station ]; then
+#			#具有合法值 
+#			have_valid_station=1
+#		fi
+#	fi
+#fi
+#
+#if [ $have_valid_station -eq 0 ]; then
+#	echo "system do not have a valid station! boardinfo write error! please check what happened!"
+#	exit 1
+#fi
 
 SHELL_TEMP_SYS_FILE=/var/run/$$.tmp
 if [ -z $BOARD_INFO_FILE ]; then
@@ -288,10 +289,6 @@ else
 	SHELL_TEMP_SYS_FILE=$network_file
 fi
 
-#将原先的区段删除   再在指定的位置上 添加新的定义
-#sed -i "/^"${cur_network_name}"={/,/^\}/ d\
-#		;"${line_no}" r "${SHELL_TEMP_SYS_FILE}"" $BOARD_INFO_SRC_FILE
-
 #更改boardinfo.define文件中相应配置
 
 value=`grep -n "${cur_network_name}={"  $BOARD_INFO_SRC_FILE`
@@ -304,10 +301,15 @@ line_no=`echo $value|cut -d ':' -f1`
 debug echo "match line no = $line_no"
 line_no=$(($line_no-1))
 
-echo "modify file:${BOARD_ENTRY_SHELL_PATH}/${current_station}/${BOARD_INFO_DEFINE_FILE}"
-(cd ${BOARD_ENTRY_SHELL_PATH}&&ln -sf ${current_station}/${BOARD_INFO_DEFINE_FILE} ${BOARD_INFO_DEFINE_FILE}) 
+#将原先的区段删除   再在指定的位置上 添加新的定义
 sed -i "/^"${cur_network_name}"={/,/^\}/ d\
-		;"${line_no}" r "${SHELL_TEMP_SYS_FILE}"" ${BOARD_ENTRY_SHELL_PATH}/${current_station}/${BOARD_INFO_DEFINE_FILE}
+		;"${line_no}" r "${SHELL_TEMP_SYS_FILE}"" $BOARD_INFO_SRC_FILE
+
+#echo "modify file:${BOARD_ENTRY_SHELL_PATH}/${current_station}/${BOARD_INFO_DEFINE_FILE}"
+#(cd ${BOARD_ENTRY_SHELL_PATH}&&ln -sf ${current_station}/${BOARD_INFO_DEFINE_FILE} ${BOARD_INFO_DEFINE_FILE}) 
+#sed -i "/^"${cur_network_name}"={/,/^\}/ d\
+#		;"${line_no}" r "${SHELL_TEMP_SYS_FILE}"" ${BOARD_ENTRY_SHELL_PATH}/${current_station}/${BOARD_INFO_DEFINE_FILE}
+
 rm -rf $priv_temp_file
 rm -rf $SHELL_TEMP_SYS_FILE
 

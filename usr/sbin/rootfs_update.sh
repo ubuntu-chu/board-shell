@@ -28,7 +28,7 @@ PACKAGE_FILE=$DEF_PACKAGE_FILE
 DEL_PACKAGE_FILE=1
 tar_opt="zxvf"
 boarddefine_recover_need=0
-station_change_shell="station-change.sh"
+#station_change_shell="station-change.sh"
 boarddefine_change_shell="boarddefine-change.sh"
 network_change_shell="/etc/board/network-change.sh"
 temp_network_config_flie="/var/run/$$.network_config"
@@ -93,18 +93,18 @@ else
 	boarddefine_recover_need=0
 fi
 
-station_recover_need=0
-which $station_change_shell > /dev/null
-if [ $? -eq 0 ]; then
-	#获取当前配置信息
-	current_station=`$station_change_shell --current_simple`
-	if [ $? -eq 0 ]; then
-		if [ ! -z $current_station ]; then
-			#有合法值  则需要恢复station值
-			station_recover_need=1
-		fi
-	fi
-fi
+#station_recover_need=0
+#which $station_change_shell > /dev/null
+#if [ $? -eq 0 ]; then
+#	#获取当前配置信息
+#	current_station=`$station_change_shell --current_simple`
+#	if [ $? -eq 0 ]; then
+#		if [ ! -z $current_station ]; then
+#			#有合法值  则需要恢复station值
+#			station_recover_need=1
+#		fi
+#	fi
+#fi
 
 echo "get current network config"
 if [ -x $network_change_shell ]; then
@@ -126,15 +126,15 @@ if [ $? -eq 0 ]; then
 		echo "recover previous network config"
 		$network_change_shell --file $temp_network_config_flie
 	fi
-	if [ $station_recover_need -eq 1 ]; then
-		echo "recover previous station"
-		echo "$station_change_shell --station $current_station --boardinfo_sync_dis"
-		$station_change_shell --station $current_station --boardinfo_sync_dis
-		echo ""
-	else
-		echo "$station_change_shell  do not exist!"
-		echo "you must manual set station info by run $station_change_shell!"
-	fi
+	#if [ $station_recover_need -eq 1 ]; then
+	#	echo "recover previous station"
+	#	echo "$station_change_shell --station $current_station --boardinfo_sync_dis"
+	#	$station_change_shell --station $current_station --boardinfo_sync_dis
+	#	echo ""
+	#else
+	#	echo "$station_change_shell  do not exist!"
+	#	echo "you must manual set station info by run $station_change_shell!"
+	#fi
 	if [ $boarddefine_recover_need -eq 1 ]; then
 		if [ ${#key_array[*]} -eq 0 ]; then
 			echo "$BOARD_INFO_SRC_FILE file do not have a valid board define! you must manual set baord define info by run $boarddefine_change_shell!"

@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#此文件暂时不再使用
+
+exit 0
+
 #包含partion_utility.sh的主要目的是更新恢复模式文件系统
 partion_utility_file=/usr/sbin/partion_utility.sh
 partion_utility_file_exsit=0
