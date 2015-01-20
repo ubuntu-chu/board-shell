@@ -4,7 +4,7 @@
 board_name             board_type       hardware             
 rfu_rru                1000             rfu_rru_hardware_3
 mesh_rfu_rru           1001             mesh_rfu_rru_hardware_1
-cs_rfu_rru             1100             cs_rfu_rru_hardware_1
+cs_rfu_rru             1100             cs_rfu_rru_hardware_2
 ss_rfu_rru             1200             ss_rfu_rru_hardware_1
 ifu_ccu                2000             ifu_ccu_hardware_1
 rs_ccu                 2100             rs_ccu_hardware_1
@@ -60,6 +60,12 @@ mesh_rfu_rru_hardware_1={
 
 cs_rfu_rru_hardware_1={
 	value=1
+	default=no
+	config=cs_rru_subhardware_def_1:lmk04806_clkin_def_10M:rf2052_def_400M
+}
+
+cs_rfu_rru_hardware_2={
+	value=2
 	default=yes
 	config=cs_rru_subhardware_def_1:lmk04806_clkin_def_10M:rf2052_def_400M
 }

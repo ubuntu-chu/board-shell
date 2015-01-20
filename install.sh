@@ -406,8 +406,7 @@ case "$1" in
 esac
 
 
-#cp $rootfs_common_path/usr/sbin/lpc3250/rootfs_update.sh /opt/local/
-cp $rootfs_common_path/usr/sbin/rootfs_update.sh /opt/local/
+cp $rootfs_common_path/usr/sbin/rootfs_update.sh /opt/local/$station
 
 exit 0
 
