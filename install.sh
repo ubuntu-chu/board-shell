@@ -264,8 +264,15 @@ install_lpc3250_misc()
 		echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/exec-boarddefine-change.sh  $dir"
 		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/exec-boarddefine-change.sh  $dir
 
-		echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/$station/rcS.board  $dir"
-		cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/$station/rcS.board  $dir
+		if [ $dir = $dest_app_package_ccu_dir ]; then
+
+			echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/$station/ccu/rcS.board  $dir"
+			cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/$station/ccu/rcS.board  $dir
+		else
+
+			echo "cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/$station/rru/rcS.board  $dir"
+			cp -r $rootfs_common_path/$ETC_BOARD_SUFFIX/$cpu_name_lpc3250/$station/rru/rcS.board  $dir
+		fi
 
 		#for station in $station_list; 
 		#do
@@ -283,7 +290,9 @@ install_lpc3250()
 	rm -rf $LPC3250_ETC_BOARD_DEST_PATH/*
 	mkdir -p $LPC3250_ETC_BOARD_PRIVATE_DEST_PATH
 	install_files $ETC_BOARD_SRC_PATH $cpu_name_lpc3250 $LPC3250_ETC_BOARD_DEST_PATH
-	cp -ar $ETC_BOARD_SRC_PATH/$cpu_name_lpc3250/$station/*  $LPC3250_ETC_BOARD_DEST_PATH
+	#忽略目录下子目录的拷贝
+	echo "cp $ETC_BOARD_SRC_PATH/$cpu_name_lpc3250/$station/*  $LPC3250_ETC_BOARD_DEST_PATH"
+	cp $ETC_BOARD_SRC_PATH/$cpu_name_lpc3250/$station/*  $LPC3250_ETC_BOARD_DEST_PATH
 
 	install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_lpc3250 $LPC3250_ETC_BOARD_PRIVATE_DEST_PATH
 	#set -x
@@ -302,7 +311,9 @@ install_tci6614()
 	rm -rf $TCI6614_ETC_BOARD_DEST_PATH/*
 	mkdir -p $TCI6614_ETC_BOARD_PRIVATE_DEST_PATH
 	install_files $ETC_BOARD_SRC_PATH $cpu_name_tci6614 $TCI6614_ETC_BOARD_DEST_PATH
-	cp -ar $ETC_BOARD_SRC_PATH/$cpu_name_tci6614/$station/*  $TCI6614_ETC_BOARD_DEST_PATH
+	#忽略目录下子目录的拷贝
+	echo "cp $ETC_BOARD_SRC_PATH/$cpu_name_tci6614/$station/*  $TCI6614_ETC_BOARD_DEST_PATH"
+	cp $ETC_BOARD_SRC_PATH/$cpu_name_tci6614/$station/*  $TCI6614_ETC_BOARD_DEST_PATH
 
 	install_files $ETC_BOARD_PRIVATE_SRC_PATH $cpu_name_tci6614 $TCI6614_ETC_BOARD_PRIVATE_DEST_PATH
 	install_files $USR_SBIN_SRC_PATH $cpu_name_tci6614 $TCI6614_USR_SBIN_DEST_PATH

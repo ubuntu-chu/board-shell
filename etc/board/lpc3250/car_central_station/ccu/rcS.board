@@ -1,0 +1,49 @@
+#支持的板型列表
+#表中各列之间使用空格作为分隔符
+#boardname definition table -- start; with a space as a delimiter
+board_name             board_type       hardware             
+ifu_ccu                2000             ifu_ccu_hardware_1
+rs_ccu                 2100             rs_ccu_hardware_1
+#boardname definition tabel -- end
+
+#
+#硬件版本  子硬件版本定义区    
+#ccu板型子硬件版本一般而言 固定为1
+#
+
+#defalut=yes 代表默认使用此值    default=no   
+#一种板名的所有硬件版本中必须只有一个硬件版本defaule值为yes
+
+#---------------------------------------
+
+ifu_ccu_hardware_1={
+	value=1
+	default=yes
+	config=ifu_ccu_subhardware
+}
+
+ifu_ccu_subhardware={
+	type=join
+	default=1
+	widget=raido
+	name=subhardware
+	range=1
+}
+
+#---------------------------------------
+
+rs_ccu_hardware_1={
+	value=1
+	default=yes
+	config=rs_ccu_subhardware
+}
+
+rs_ccu_subhardware={
+	type=join
+	default=1
+	widget=raido
+	name=subhardware
+	range=1
+}
+
+

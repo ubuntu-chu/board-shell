@@ -4,16 +4,15 @@
 board_name             board_type       hardware             
 rfu_rru                1000             rfu_rru_hardware_3
 mesh_rfu_rru           1001             mesh_rfu_rru_hardware_1
-cs_rfu_rru             1100             cs_rfu_rru_hardware_1
+cs_rfu_rru             1100             cs_rfu_rru_hardware_1:cs_rfu_rru_hardware_2
 ss_rfu_rru             1200             ss_rfu_rru_hardware_1
-ifu_ccu                2000             ifu_ccu_hardware_1
 rs_ccu                 2100             rs_ccu_hardware_1
 #boardname definition tabel -- end
 #rfu_rru                1000             rfu_rru_hardware_3:rfu_rru_hardware_4
+#rs_ccu 为根文件系统默认的型号  因此保留  但在rru中 此型号永远不会使用
 
 #
 #硬件版本  子硬件版本定义区    
-#ccu板型子硬件版本一般而言 固定为1
 #rru板型子硬件版本一般指其功放的版本
 #
 
@@ -60,6 +59,12 @@ mesh_rfu_rru_hardware_1={
 
 cs_rfu_rru_hardware_1={
 	value=1
+	default=no
+	config=cs_rru_subhardware_def_1:lmk04806_clkin_def_10M:rf2052_def_400M
+}
+
+cs_rfu_rru_hardware_2={
+	value=2
 	default=yes
 	config=cs_rru_subhardware_def_1:lmk04806_clkin_def_10M:rf2052_def_400M
 }
@@ -94,22 +99,6 @@ ss_rru_subhardware_def_1={
 	type=detach
 	default=1
 	define=ss_rru_subhardware_define
-}
-
-#---------------------------------------
-
-ifu_ccu_hardware_1={
-	value=1
-	default=yes
-	config=ifu_ccu_subhardware
-}
-
-ifu_ccu_subhardware={
-	type=join
-	default=1
-	widget=raido
-	name=subhardware
-	range=1
 }
 
 #---------------------------------------
