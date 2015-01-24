@@ -1,6 +1,7 @@
 #!/bin/sh
 
 LPC3250_KEY="lpc3250"
+LPC3250_MISC_KEY="lpc3250_misc"
 TCI6614_KEY="tci6614"
 ALL_KEY="all"
 UPDATE_KEY="update"
@@ -146,7 +147,7 @@ install_usr_share()
 }
 
 help(){
-	echo "Usage                 : $0 <$LPC3250_KEY|$TCI6614_KEY|$ALL_KEY|$LPC3250_UPDATE_KEY|$TCI6614_UPDATE_KEY|$UPDATE_KEY|$PACK_SHELL> <$CAR_CENTRAL_STATION|$RELAY_STATION|$METROCELL>"
+	echo "Usage                 : $0 <$LPC3250_MISC_KEY|$LPC3250_KEY|$TCI6614_KEY|$ALL_KEY|$LPC3250_UPDATE_KEY|$TCI6614_UPDATE_KEY|$UPDATE_KEY|$PACK_SHELL> <$CAR_CENTRAL_STATION|$RELAY_STATION|$METROCELL>"
 	exit 1
 }
 
@@ -381,6 +382,12 @@ case "$1" in
 		generate_version_file $TCI6614_ROOTFS_DEST_PATH
 		install_tci6614
 		install_rootfs_update_tci6614
+		;;
+
+	$LPC3250_MISC_KEY)
+		[ $# -ne 2 ] && (echo "please assigned station!";exit)
+		station_get $2
+		install_lpc3250_misc
 		;;
 
 	$UPDATE_KEY)

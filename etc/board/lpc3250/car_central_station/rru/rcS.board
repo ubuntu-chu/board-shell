@@ -21,7 +21,7 @@ rs_ccu                 2100             rs_ccu_hardware_1
 rfu_rru_hardware_3={
 	value=3
 	default=yes
-	config=rfu_rru_subhardware_def_1:lmk04806_clkin_def_10M:rf2052_def_400M:45dBm_fade
+	config=rfu_rru_subhardware_def_1:lmk04806_clkin_def_10M:45dBm_fade
 }
 #rfu_rru_hardware_4={
 #	value=4
@@ -52,7 +52,7 @@ rfu_rru_subhardware_def_1={
 mesh_rfu_rru_hardware_1={
 	value=1
 	default=yes
-	config=rfu_rru_subhardware_def_1:lmk04806_clkin_def_10M:rf2052_def_400M:45dBm_fade
+	config=rfu_rru_subhardware_def_1:lmk04806_clkin_def_10M:45dBm_fade
 }
 
 #---------------------------------------
@@ -60,13 +60,13 @@ mesh_rfu_rru_hardware_1={
 cs_rfu_rru_hardware_1={
 	value=1
 	default=no
-	config=cs_rru_subhardware_def_1:lmk04806_clkin_def_10M:rf2052_def_400M:45dBm_fade
+	config=cs_rru_subhardware_def_1:lmk04806_clkin_def_10M:45dBm_fade
 }
 
 cs_rfu_rru_hardware_2={
 	value=2
 	default=yes
-	config=cs_rru_subhardware_def_1:lmk04806_clkin_def_10M:rf2052_def_400M:45dBm_fade
+	config=cs_rru_subhardware_def_1:lmk04806_clkin_def_10M:45dBm_fade
 }
 
 cs_rru_subhardware_define={
@@ -86,7 +86,7 @@ cs_rru_subhardware_def_1={
 ss_rfu_rru_hardware_1={
 	value=1
 	default=yes
-	config=ss_rru_subhardware_def_1:lmk04806_clkin_def_10M:rf2052_def_400M:45dBm_fade
+	config=ss_rru_subhardware_def_1:lmk04806_clkin_def_10M:45dBm_fade
 }
 
 ss_rru_subhardware_define={
@@ -140,49 +140,16 @@ lmk04806_clkin_def_30M={
 }
 
 #
-#rf2052配置定义区
-#
-
-rf2052_clk={
-	widget=raido
-	name=rf2051_clk
-	range=200M:400M:600M:800M
-}
-
-rf2052_def_200M={
-	type=detach
-	default=200M
-	define=rf2052_clk
-}
-
-rf2052_def_400M={
-	type=detach
-	default=400M
-	define=rf2052_clk
-}
-
-rf2052_def_600M={
-	type=detach
-	default=600M
-	define=rf2052_clk
-}
-
-rf2052_def_800M={
-	type=detach
-	default=800M
-	define=rf2052_clk
-}
-
-
-#
 #45dBm 衰减值配置定义区
 #
+#string 类型的编辑框下  range被当作为格式提示  当其值为none时 代表没有提示
 
 45dBm_fade={
 	type=join
-	default=31
+	default=none
 	widget=edit
-	name=45dBm_fade
-	range=0:63
+	data_type=string
+	name=fade_45dBm
+	range="value format:{freq,fade},{freq,fade},{freq,fade}...; none on behalf of the invalid; do not enter spaces"
 }
 

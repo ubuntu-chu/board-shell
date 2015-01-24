@@ -31,6 +31,8 @@ configname_array=()
 configdefault_array=()
 configrange_array=()
 configwidget_array=()
+#编辑框下数据类型  对于选择框而言 无效
+configdata_type_array=()
 
 #新配置数组
 new_config_array=()
@@ -42,7 +44,10 @@ assigned_hardware=
 show_current_board_define=0
 new_board_type=
 new_hardware=
-board_name_changed=0
+#值=0 代表板名 硬件号都没有改变   
+#值=1 代表板名发生改变
+#值=2 代表硬件版本号发生改变
+board_name_or_hardware_changed=0
 skip_key="skip"
 config_none_key="config_none"
 
@@ -66,6 +71,15 @@ paramkey_array=()
 type_key_join="join"
 type_key_detach="detach"
 
+#选择框控件
+widget_radio="raido"
+#编辑框控件
+widget_edit="edit"
+
+widget_data_type_int="int"
+widget_data_type_float="float"
+widget_data_type_str="string"
+
 help(){
 	echo "Usage            : $0 [$param_help|$param_current|$param_debug|$param_board_name|$param_hardware]"
 	echo "Param $param_help: show help"
@@ -83,6 +97,7 @@ help(){
 		#获取此board_name所对应的硬件版本信息及配置信息
 		hardwareinfo_get "${hardware_array[$help_index]}"
 		echo "                   board_name: ${boardname_array[$help_index]}"
+		echo "                   board_type: ${boardtype_array[$help_index]}"
 		echo "                   hardware={"
 		echo "                       default_ver=${hardwarevalue_default}"
 
@@ -133,6 +148,16 @@ help(){
 		fi
 	done
 	exit 1
+}
+
+is_int()
+{
+	return 0
+}
+
+is_float()
+{
+	return 0
 }
 
 info(){
@@ -314,6 +339,26 @@ hardwareconfig_get()
 			exit 1
 		else
 			configwidget_array[$index]=$widget
+			if [ $widget = $widget_edit ]; then
+				if [ -z $data_type ]; then
+					echo "config:$var  key[data_type] value undefined"
+					exit 1
+				else
+					#判断输入是否合法
+					case "${data_type}" in
+						"$widget_data_type_int"|"$widget_data_type_float"|"$widget_data_type_str")
+							#仅仅对编辑框有效
+							configdata_type_array[$index]=$data_type
+							;;
+						*)
+							echo "invalid data type: $data_type"
+							exit 1
+							;;
+					esac
+				fi
+			else
+				configdata_type_array[$index]=0
+			fi
 		fi
 		index=$(($index+1))
 	done
@@ -453,10 +498,8 @@ else
 	new_board_name=$assigned_board_name
 fi
 
-if [ $new_board_name = $board_name ]; then
-	board_name_changed=0
-else
-	board_name_changed=1
+if [ ! $new_board_name = $board_name ]; then
+	board_name_or_hardware_changed=1
 fi
 echo "new board name=$new_board_name"
 new_config_array_add "board_name=$new_board_name"
@@ -470,14 +513,14 @@ new_config_array_add "board_type=$new_board_type"
 #获取硬件版本
 hardwareinfo_get "${hardware_array[$array_index]}"
 
+if [ $board_name_or_hardware_changed -eq 0 ]; then
+	#使用当前版本
+	default_hardware=$hardware
+else
+	default_hardware=${hardwarevalue_default}
+fi
 #未通过形参设置 hardware
 if [ -z $assigned_hardware ]; then
-	if [ $board_name_changed -eq 0 ]; then
-		#使用当前版本
-		default_hardware=$hardware
-	else
-		default_hardware=${hardwarevalue_default}
-	fi
 	if [ -z $assigned_board_name ]; then
 		echo ""
 
@@ -515,6 +558,12 @@ else
 	new_hardware=$assigned_hardware
 fi
 
+debug echo "new_hardware=$new_hardware"
+debug echo "default_hardware=$default_hardware"
+
+if [ ! $new_hardware = $default_hardware ]; then
+	board_name_or_hardware_changed=2
+fi
 echo "new hardware=$new_hardware"
 new_config_array_add "hardware=$new_hardware"
 #判断所选择的硬件版本 在数组中的索引  使用此索引去查找此硬件版本对应的配置
@@ -549,19 +598,55 @@ if [ ! -z "$assigned_board_name" ]; then
 				config_list=`echo ${configrange_array[$index]} | tr ':' ' '`
 				#key值 相等   进一步判断value是否合法
 				is_find=1
-				debug echo "config_list=$config_list"
-				#注意此时： for里面config_list的写法
-				for config_var in $config_list;
-				do
-					debug  echo "value=$value"
-					debug  "config_var=$config_var"
-					#value 合法判断
-					if [ "$value" = "$config_var" ]; then
+				#获取控件类型
+				widget_type=${configwidget_array[$index]}
+				debug echo "widget_type=$widget_type"
+				case "$widget_type" in
+					#选择框控件
+					"$widget_radio")
+						debug echo "config_list=$config_list"
+						#注意此时： for里面config_list的写法
+						for config_var in $config_list;
+						do
+							debug  echo "value=$value"
+							debug  "config_var=$config_var"
+							#value 合法判断
+							if [ "$value" = "$config_var" ]; then
+								is_find=2
+								configmatch_array[$i]="$index"
+								break
+							fi
+						done
+						;;
+					#编辑框控件
+					"$widget_edit")
+						#目前编辑框未判断范围
 						is_find=2
 						configmatch_array[$i]="$index"
-						break
-					fi
-				done
+						#case "${configdata_type_array[$index]}" in
+						#	"$widget_data_type_int")
+						#		#获取最小值和最大值  目前此处暂不实现 使用str可替代int类型 不过str缺少范围判断
+						#		#判断范围是否合法
+						#		break;
+						#		;;
+
+						#	"$widget_data_type_str")
+						#		break
+						#		;;
+
+						#	"$widget_data_type_float")
+						#		break
+						#		;;
+						#	*)
+						#		echo "invalid data type: $, error! please check what happened!"
+						#		;;
+						#esac
+						;;
+					*)
+						echo "invalid widget type: $widget_type"
+						exit 1
+						;;
+				esac
 			fi
 			index=$(($index + 1))
 		done
@@ -582,8 +667,10 @@ if [ ! -z "$assigned_board_name" ]; then
 		#遍历默认参数列表 
 		index_list=`seq 0 $((${#configname_array[*]} - 1))`
 		debug echo "index_list=$index_list"
+		#已经传入的参数列表
 		tr_list=`echo ${configmatch_array[*]} | tr -d ' '`
 		debug echo "tr_list=$tr_list"
+		#获取需要添加的默认参数列表
 		if [ -z $tr_list ]; then
 			#defaut_list="$index_list"
 			defaut_list=`echo $index_list| tr '\n' ' '`
@@ -591,9 +678,25 @@ if [ ! -z "$assigned_board_name" ]; then
 			defaut_list=`echo $index_list | tr -d $tr_list`
 		fi
 		debug echo "default_list=$defaut_list"
-		for defaut_value in $defaut_list;
+		for defaut_index in $defaut_list;
 		do
-			new_config_array_add "${configname_array[$defaut_value]}=${configdefault_array[$defaut_value]}"
+			#板名和硬件版本号都没有发生改变  使用当前值
+			if [ $board_name_or_hardware_changed -eq 0 ]; then
+				#获取配置名称
+				config_name=${configname_array[$defaut_index]}
+				#查看当前是否存在此配置值
+				eval config_name_value=\$${config_name}
+				if [ -z $config_name_value ]; then
+					#若配置值不存在 则使用默认值
+					config_value=${configdefault_array[$defaut_index]}
+				else
+					#若配置值存在 则使用当前值
+					config_value=$config_name_value	
+				fi
+			else
+				config_value=${configdefault_array[$defaut_index]}
+			fi
+			new_config_array_add "${configname_array[$defaut_index]}=${config_value}"
 		done
 	fi
 else
@@ -611,43 +714,89 @@ else
 			#目前widget_type未使用  未来的实现中 可通过widget的类型来提供不同的编译形式  目前只支持单选框类型
 			widget_type=${configwidget_array[$index]}
 			echo "config: ${config_name}"
-			if [ $board_name_changed -eq 0 ]; then
+			if [ $board_name_or_hardware_changed -eq 0 ]; then
 				eval config_name_value=\$${config_name}
 			else
 				config_name_value="${config_defalut_value}"
 			fi
 			if [ -z $config_name_value ]; then
 				echo "current value:null  use default value: ${config_defalut_value}"
+				config_name_value="${config_defalut_value}"
 			else
 				echo "current value:$config_name_value"
 			fi
-			#echo "default value: ${config_defalut_value}"
-			config_list=`echo ${configrange_array[$index]} | tr ':' ' '`
+			case "$widget_type" in
+				"$widget_radio")
+					#echo "default value: ${config_defalut_value}"
+					config_list=`echo ${configrange_array[$index]} | tr ':' ' '`
 
-			select var in "$skip_key" ${config_list}; do
-				break
-			done
+					select var in "$skip_key" ${config_list}; do
+						break
+					done
 
-			if [ ! -z $var ]; then
-				debug set -x
-				if [ $skip_key = $var ]; then
-					eval config_current_value=\$${config_name}
-					if [ -z $config_current_value ]; then
-						new_config=${config_defalut_value}
+					if [ ! -z $var ]; then
+						debug set -x
+						if [ $skip_key = $var ]; then
+							new_config=${config_name_value}
+						else
+							new_config=$var
+						fi
+						debug set +x
 					else
-						new_config=${config_current_value}
+						echo "input invalid! please input again!"
+						continue
 					fi
-				else
-					new_config=$var
-				fi
-				debug set +x
-				echo "new value: $new_config"
-				echo ""
-				new_config_array_add "${config_name}=${new_config}"
-			else
-				echo "input invalid! please input again!"
-				continue
-			fi
+					;;
+				"$widget_edit")
+					while true;
+					do
+						#string 类型的编辑框下  range被当作为格式提示  当其值为none时 代表没有提示
+						if [ "${configdata_type_array[$index]}" = "$widget_data_type_str" -a ! "${configrange_array[$index]}" = "none" ]; then
+							echo "${configrange_array[$index]}"
+						fi
+						echo "enter value(if there is no any input, will use the current value; note: the equals sign(=) is not allowed!):"
+						read var
+						if [ -z $var ]; then
+							break;
+						else
+							#判断输入是否合法
+							case "${configdata_type_array[$index]}" in
+								"$widget_data_type_int")
+									#获取最小值和最大值  目前此处暂不实现 使用str可替代int类型 不过str缺少范围判断
+									min=`echo ${configrange_array[$index]} | cut -d ',' -f 1`
+									max=`echo ${configrange_array[$index]} | cut -d ',' -f 2`
+									#判断范围是否合法
+									break;
+									;;
+
+								"$widget_data_type_str")
+									break
+									;;
+
+								"$widget_data_type_float")
+									break
+									;;
+								*)
+									echo "invalid data type: $, error! please check what happened!"
+									;;
+							esac
+						fi
+					done
+					if [ -z $var ]; then
+						new_config=${config_name_value}
+					else
+						new_config=$var
+					fi
+					;;
+				*)
+					echo "invalid widget type: $widget_type"
+					exit 1
+					;;
+			esac
+
+			echo "new value: $new_config"
+			echo ""
+			new_config_array_add "${config_name}=${new_config}"
 
 			index=$(($index + 1))
 			if [ $index -ge ${#configname_array[*]} ]; then
