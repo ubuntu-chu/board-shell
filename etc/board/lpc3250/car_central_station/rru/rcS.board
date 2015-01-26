@@ -3,8 +3,9 @@
 #boardname definition table -- start; with a space as a delimiter
 board_name             board_type       hardware             
 rfu_rru                1000             rfu_rru_hardware_3
-mesh_rfu_rru           1001             mesh_rfu_rru_hardware_1
-cs_rfu_rru             1100             cs_rfu_rru_hardware_1:cs_rfu_rru_hardware_2
+600M_mesh_rfu_rru      1001             mesh_rfu_rru_hardware_1
+400M_cs_rfu_rru        1100             cs_rfu_rru_hardware_1:cs_rfu_rru_hardware_2
+600M_cs_rfu_rru        1101             cs_rfu_rru_hardware_1:cs_rfu_rru_hardware_2
 ss_rfu_rru             1200             ss_rfu_rru_hardware_1
 rs_ccu                 2100             rs_ccu_hardware_1
 #boardname definition tabel -- end
