@@ -467,9 +467,15 @@ fi
 echo "----------------change board define----------------"
 
 #没指定板名时，  修改配置参数  
-if [ -z $assigned_board_name -a ${#paramkey_array[*]} -ne 0 ]; then
-	#没指定板名  则使用当前名字
-	assigned_board_name="$board_name"
+if [ -z $assigned_board_name ]; then
+	#没指定板名  判断是否有指定配置参数或硬件版本号  若有则使用当前板名 触发配置流程
+	if [ ! -z ${assigned_hardware} ]; then
+		assigned_board_name="$board_name"
+	else
+		if [ ${#paramkey_array[*]} -ne 0 ]; then
+			assigned_board_name="$board_name"
+		fi
+	fi
 fi
 
 if [ -z $assigned_board_name ]; then
